@@ -37,34 +37,42 @@ export default function App() {
           if (e.buttons !== 1) return
           setP2({ x: e.pageX, y: e.pageY })
         }}
+        stroke="#000"
+        fill="#000"
+        strokeWidth={3}
       >
         {showDecorations && (
           <>
-            <circle
-              name="start-cirlce"
-              cx={sx}
-              cy={sy}
-              r={4}
-              strokeWidth={3}
-              stroke={"#000"}
-            />
-            <g
+            <circle name="start-cirlce" cx={sx} cy={sy} r={4} strokeWidth={3} />
+            <polygon
               name="end-arrow"
+              points="0,-6 12,0, 0,6"
               transform={`translate(${ex},${ey}) rotate(${angleAsDegrees})`}
-            >
-              <polygon points="0,-6 12,0, 0,6" fill="#000" />
-            </g>
+            />
           </>
         )}
         <path
           name="line-between"
           d={`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`}
           strokeWidth={3}
-          stroke={"#000"}
           fill="none"
         />
-        <circle name="start-point" cx={p1.x} cy={p1.y} r={3} fill={"#F00"} />
-        <circle name="end-point" cx={p2.x} cy={p2.y} r={3} fill={"#F00"} />
+        <circle
+          name="start-point"
+          cx={p1.x}
+          cy={p1.y}
+          r={3}
+          fill={"#F00"}
+          strokeWidth={0}
+        />
+        <circle
+          name="end-point"
+          cx={p2.x}
+          cy={p2.y}
+          r={3}
+          fill={"#F00"}
+          strokeWidth={0}
+        />
       </svg>
       <div style={{ display: "grid" }}>
         <label>
