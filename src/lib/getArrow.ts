@@ -1,6 +1,6 @@
 import { Line, Point } from "./"
 
-type Options = {
+export type ArrowOptions = {
   bow?: number
   stretchMin?: number
   stretchMax?: number
@@ -11,12 +11,32 @@ type Options = {
   straights?: boolean
 }
 
+/**
+ * getArrow
+ * @description Draw an arrow between two points.
+ * @param x0 The x position of the "from" point.
+ * @param y0 The y position of the "from" point.
+ * @param x1 The x position of the "to" point.
+ * @param y1 The y position of the "to" point.
+ * @param options Additional options for computing the line.
+ * @example
+ * getArrow(0, 0, 100, 200, {
+    bow: 1
+    stretchMin: 20
+    stretchMax: Infinity
+    stretch: 1
+    padStart: 0
+    padEnd: 0
+    flip: false
+    straights: true
+ * })
+ */
 export default function getArrow(
   x0: number,
   y0: number,
   x1: number,
   y1: number,
-  options: Options = {} as Options
+  options: ArrowOptions = {} as ArrowOptions
 ): number[] {
   let sx: number,
     sy: number,
