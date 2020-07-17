@@ -25,7 +25,7 @@ yarn add perfect-arrows
 
 ## Usage
 
-The functions in this library provide only the information needed to draw an arrow. You'll need to draw the arrow yourself using your technology of choice. See below for an example React component.
+The functions in this library provide only the information needed to draw an arrow. You'll need to draw the arrow yourself using your technology of choice. See below for an example React component with SVG.
 
 ### `getArrow(x0, y0, x1, y1, options)`
 
@@ -90,7 +90,7 @@ export function PerfectArrow() {
   return (
     <svg
       viewBox="0 0 640 480"
-      style={{ height: 640, width: 480 }}
+      style={{ width: 640, height: 480 }}
       stroke="#000"
       fill="#000"
       strokeWidth={3}
