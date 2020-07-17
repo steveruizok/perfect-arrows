@@ -2,6 +2,8 @@
 
 A set of functions for drawing perfect arrows between points and shapes.
 
+![Example](/example.gif)
+
 🔗 [Demo](https://example.steveruizok.vercel.app/)
 
 - [x] `getArrow` - For point-to-point arrows.
