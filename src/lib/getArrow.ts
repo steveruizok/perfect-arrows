@@ -1,4 +1,13 @@
-import { Line, Point } from "./"
+import {
+  getAngle,
+  getDistance,
+  getAngliness,
+  projectPoint,
+  getPointBetween,
+  getSector,
+  rotatePoint,
+  mod,
+} from "./utils"
 
 export type ArrowOptions = {
   bow?: number
@@ -19,17 +28,27 @@ export type ArrowOptions = {
  * @param x1 The x position of the "to" point.
  * @param y1 The y position of the "to" point.
  * @param options Additional options for computing the line.
+ * @returns [sx, sy, cx, cy, e1, e2, ae, as, ac]
  * @example
- * getArrow(0, 0, 100, 200, {
-    bow: 1
-    stretchMin: 20
-    stretchMax: Infinity
-    stretch: 1
+ * const arrow = getArrow(0, 0, 100, 200, {
+    bow: 0
+    stretch: .5
+    stretchMin: 0
+    stretchMax: 420
     padStart: 0
     padEnd: 0
     flip: false
     straights: true
  * })
+ * 
+ * const [
+ *  startX, startY, 
+ *  controlX, controlY, 
+ *  endX, endY, 
+ *  endAngle, 
+ *  startAngle,
+ *  controlAngle
+ *  ] = arrow
  */
 export default function getArrow(
   x0: number,
@@ -38,111 +57,94 @@ export default function getArrow(
   y1: number,
   options: ArrowOptions = {} as ArrowOptions
 ): number[] {
-  let sx: number,
-    sy: number,
-    cx: number,
-    cy: number,
-    ex: number,
-    ey: number,
-    angle: number
-
   const {
-    bow = 1,
-    stretch = 1,
-    stretchMin = 20,
-    stretchMax = Infinity,
+    bow = 0,
+    stretch = 0.5,
+    stretchMin = 0,
+    stretchMax = 420,
     padStart = 0,
     padEnd = 0,
     flip = false,
     straights = true,
   } = options
 
-  const p1 = new Point(x0, y0)
-  const p2 = new Point(x1, y1)
+  const angle = getAngle(x0, y0, x1, y1)
+  const dist = getDistance(x0, y0, x1, y1)
+  const angliness = getAngliness(x0, y0, x1, y1)
 
-  const direct = new Line(p1.x, p1.y, p2.x, p2.y)
-  const { angliness } = direct
-
-  const tooShort = direct.length < (padStart + padEnd) * 2
-
-  if (tooShort) {
-    direct.expand(-padStart, 1)
-    direct.expand(Math.max(-direct.length + 1, -padEnd), 0)
-  }
+  // Step 0 ⤜⤏ Should the arrow be straight?
 
   if (
-    (straights &&
-      (angliness === 0 || angliness === Infinity || direct.angliness === 1)) ||
-    tooShort
+    dist < (padStart + padEnd) * 2 || // Too short
+    (bow === 0 && stretch === 0) || // No bow, no stretch
+    (straights && [0, 1, Infinity].includes(angliness)) // 45 degree angle
   ) {
-    if (!tooShort) {
-      direct.expand(-padStart, 1)
-      direct.expand(-padEnd, 0)
-    }
-    sx = direct.start.x
-    sy = direct.start.y
-    cx = direct.midPoint.x
-    cy = direct.midPoint.y
-    ex = direct.end.x
-    ey = direct.end.y
-    angle = direct.angle
-  } else {
-    const str = modulate(direct.length, [stretchMin, stretchMax], [1, 0], true)
+    // ⤜⤏ Arrow is straight! Just pad start and end points.
 
-    const cross = direct
-      .clone()
-      .rotate(Math.PI / 2)
-      .scale(bow + str * stretch)
+    // Padding distances
+    const ps = Math.max(0, Math.min(dist - padStart, padStart))
+    const pe = Math.max(0, Math.min(dist - ps, padEnd))
 
-    const corner =
-      Math.floor(direct.octant) % 2 === 0
-        ? flip
-          ? cross.start
-          : cross.end
-        : flip
-        ? cross.end
-        : cross.start
+    // Move start point toward end point
+    let [px0, py0] = projectPoint(x0, y0, angle, ps)
 
-    const line1 = new Line(corner.x, corner.y, p1.x, p1.y).expand(-padStart, 0)
+    // Move end point toward start point
+    let [px1, py1] = projectPoint(x1, y1, angle + Math.PI, pe)
 
-    const line2 = new Line(corner.x, corner.y, p2.x, p2.y).expand(-padEnd, 0)
+    // Get midpoint between new points
+    const [mx, my] = getPointBetween(px0, py0, px1, py1, 0.5)
 
-    const direct2 = new Line(line1.end.x, line1.end.y, line2.end.x, line2.end.y)
-
-    const cross2 = direct2
-      .clone()
-      .rotate(Math.PI / 2)
-      .scale(bow + str * stretch)
-
-    const corner2 =
-      Math.floor(direct.octant) % 2 === 0
-        ? flip
-          ? cross2.start
-          : cross2.end
-        : flip
-        ? cross2.end
-        : cross2.start
-
-    sx = direct2.start.x
-    sy = direct2.start.y
-    cx = corner2.x
-    cy = corner2.y
-    ex = direct2.end.x
-    ey = direct2.end.y
-    angle = padEnd > 0 ? direct2.end.angleTo(p2) : corner2.angleTo(p2)
+    return [px0, py0, mx, my, px1, py1, angle, angle, angle]
   }
 
-  return [sx, sy, cx, cy, ex, ey, angle]
-}
+  // ⤜⤏ Arrow is an arc!
 
-function modulate(value: number, a: number[], b: number[], clamp = false) {
-  const [low, high] = b[0] < b[1] ? [b[0], b[1]] : [b[1], b[0]]
-  const result = b[0] + ((value - a[0]) / (a[1] - b[0])) * (b[1] - b[0])
+  // Is the arc clockwise or counterclockwise?
+  let rot = (getSector(angle) % 2 === 0 ? 1 : -1) * (flip ? -1 : 1)
 
-  if (clamp) {
-    if (result < low) return low
-    if (result > high) return high
-  }
+  // Calculate how much the line should "bow" away from center
+  const arc = bow + mod(dist, [stretchMin, stretchMax], [1, 0], true) * stretch
 
-  return result
+  // Step 1 ⤜⤏ Find padded points.
+
+  // Get midpoint.
+  const [mx, my] = getPointBetween(x0, y0, x1, y1, 0.5)
+
+  // Get control point.
+  let [cx, cy] = getPointBetween(x0, y0, x1, y1, 0.5 - arc)
+
+    // Rotate control point (clockwise or counterclockwise).
+  ;[cx, cy] = rotatePoint(cx, cy, mx, my, (Math.PI / 2) * rot)
+
+  // Get padded start point.
+  const a0 = getAngle(x0, y0, cx, cy)
+  const [px0, py0] = projectPoint(x0, y0, a0, padStart)
+
+  // Get padded end point.
+  const a1 = getAngle(x1, y1, cx, cy)
+  const [px1, py1] = projectPoint(x1, y1, a1, padEnd)
+
+  // Step 2  ⤜⤏ Find start and end angles.
+
+  // Start angle
+  const as = getAngle(cx, cy, x0, y0)
+
+  // End angle
+  const ae = getAngle(cx, cy, x1, y1)
+
+  // Step 3 ⤜⤏ Find control point for padded points.
+
+  // Get midpoint between padded start / end points.
+  const [mx1, my1] = getPointBetween(px0, py0, px1, py1, 0.5)
+
+  // Get control point for padded start / end points.
+  let [cx1, cy1] = getPointBetween(px0, py0, px1, py1, 0.5 - arc)
+
+    // Rotate control point (clockwise or counterclockwise).
+  ;[cx1, cy1] = rotatePoint(cx1, cy1, mx1, my1, (Math.PI / 2) * rot)
+
+  // Finally, average the two control points.
+  let [cx2, cy2] = getPointBetween(cx, cy, cx1, cy1, 0.5)
+
+  return [px0, py0, cx2, cy2, px1, py1, ae, as, angle]
 }

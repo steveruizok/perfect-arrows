@@ -1,3 +1,3 @@
-import { Line, Point, getArrow } from "./lib"
+import { getArrow, ArrowOptions } from "./lib"
 
-export { Line, Point, getArrow }
+export { getArrow, ArrowOptions }

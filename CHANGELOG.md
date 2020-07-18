@@ -1,3 +1,10 @@
+# 0.2.0
+
+- Removes classes (Point / Line) in favor of a more minimal utility functions.
+- Refactors `getArrow` function.
+- Optimizes arrow-head angles.
+- Adds start angle, center angle to list of returned values.
+
 # 0.1.0
 
 - Hello world!

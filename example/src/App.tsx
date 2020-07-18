@@ -2,37 +2,46 @@ import React from "react"
 import { getArrow } from "perfect-arrows"
 
 export default function App() {
-  const [p1, setP1] = React.useState({ x: 100, y: 100 })
-  const [p2, setP2] = React.useState({ x: 300, y: 200 })
+  const [p1, setP1] = React.useState({ x: 300, y: 200 })
+  const [p2, setP2] = React.useState({ x: 450, y: 201 })
 
-  const [bow, setBow] = React.useState(1)
-  const [stretch, setStretch] = React.useState(1)
+  const [bow, setBow] = React.useState(0)
+  const [stretch, setStretch] = React.useState(0.5)
   const [padStart, setPadStart] = React.useState(0)
   const [padEnd, setPadEnd] = React.useState(20)
-  const [stretchMin, setStretchMin] = React.useState(50)
-  const [stretchMax, setStretchMax] = React.useState(500)
+  const [stretchMin, setStretchMin] = React.useState(0)
+  const [stretchMax, setStretchMax] = React.useState(360)
   const [flip, setFlip] = React.useState(false)
   const [straights, setStraights] = React.useState(true)
   const [showDecorations, setShowDecorations] = React.useState(true)
 
-  const [sx, sy, cx, cy, ex, ey, angle] = getArrow(p1.x, p1.y, p2.x, p2.y, {
-    padStart,
-    padEnd,
-    bow,
-    straights,
-    stretch,
-    stretchMax,
-    stretchMin,
-    flip,
-  })
+  const [sx, sy, cx, cy, ex, ey, ae, as, ac] = getArrow(
+    p1.x,
+    p1.y,
+    p2.x,
+    p2.y,
+    {
+      padStart,
+      padEnd,
+      bow,
+      straights,
+      stretch,
+      stretchMax,
+      stretchMin,
+      flip,
+    }
+  )
 
-  const angleAsDegrees = angle * (180 / Math.PI)
+  const endAngleAsDegrees = ae * (180 / Math.PI)
 
   return (
     <div className="App">
       <svg
         viewBox="0 0 600 600"
         style={{ height: 600, width: 600, border: "1px solid #000" }}
+        onClick={e => {
+          setP2({ x: e.pageX, y: e.pageY })
+        }}
         onMouseMove={e => {
           if (e.buttons !== 1) return
           setP2({ x: e.pageX, y: e.pageY })
@@ -43,11 +52,11 @@ export default function App() {
       >
         {showDecorations && (
           <>
-            <circle name="start-cirlce" cx={sx} cy={sy} r={4} strokeWidth={3} />
+            <circle name="start-cirlce" cx={sx} cy={sy} r={4} />
             <polygon
               name="end-arrow"
               points="0,-6 12,0, 0,6"
-              transform={`translate(${ex},${ey}) rotate(${angleAsDegrees})`}
+              transform={`translate(${ex},${ey}) rotate(${endAngleAsDegrees})`}
             />
           </>
         )}
