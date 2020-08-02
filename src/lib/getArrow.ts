@@ -22,6 +22,7 @@ export type ArrowOptions = {
 
 /**
  * getArrow
+ * Get the points for a linking line between two points.
  * @description Draw an arrow between two points.
  * @param x0 The x position of the "from" point.
  * @param y0 The y position of the "from" point.

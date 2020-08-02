@@ -7562,7 +7562,7 @@ pbkdf2@^3.0.3:
     sha.js "^2.4.8"
 
 perfect-arrows@../:
-  version "0.1.0"
+  version "0.2.0"
 
 performance-now@^2.1.0:
   version "2.1.0"

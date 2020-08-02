@@ -1,3 +1,4 @@
 import getArrow, { ArrowOptions } from "./getArrow"
+import getBoxToBoxArrow from "./getBoxToBoxArrow"
 
-export { getArrow, ArrowOptions }
+export { getArrow, ArrowOptions, getBoxToBoxArrow }
