@@ -1,3 +1,7 @@
+# 0.2.1
+
+- Adds box to box algorithm.
+
 # 0.2.0
 
 - Removes classes (Point / Line) in favor of a more minimal utility functions.

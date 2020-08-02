@@ -9,7 +9,7 @@ A set of functions for drawing perfect arrows between points and shapes.
 [![Edit example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/steveruizok/perfect-arrows/tree/master/example?fontsize=14&hidenavigation=1&theme=dark)
 
 - [x] `getArrow` - For point-to-point arrows.
-- [ ] `getArrowBetweenRectangles` - For rectangle-to-rectangle arrows.
+- [x] `getBoxToBoxArrow` - For rectangle-to-rectangle arrows.
 
 ## Installation
 
@@ -99,6 +99,101 @@ export function PerfectArrow() {
   const arrow = getArrow(p1.x, p1.y, p2.x, p2.y, {
     padEnd: 20,
   })
+
+  const [sx, sy, cx, cy, ex, ey, ae, as, ec] = arrow
+
+  const endAngleAsDegrees = ae * (180 / Math.PI)
+
+  return (
+    <svg
+      viewBox="0 0 640 480"
+      style={{ width: 640, height: 480 }}
+      stroke="#000"
+      fill="#000"
+      strokeWidth={3}
+    >
+      <circle cx={sx} cy={sy} r={4} />
+      <path d={`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`} fill="none" />
+      <polygon
+        points="0,-6 12,0, 0,6"
+        transform={`translate(${ex},${ey}) rotate(${endAngleAsDegrees})`}
+      />
+    </svg>
+  )
+}
+```
+
+### `getBoxToBoxArrow(x0, y0, w0, h0, x1, y1, w1, h1, options)`
+
+The `getBoxToBoxArrow` function accepts the position and dimensions of two boxes (or rectangles) and returns an array containing information for:
+
+- three points: a start, end, and control point
+- three angles: an end, start, and center
+
+You can use this information to draw an arc and arrow-heads. You can use the options object to tweak the return values.
+
+**Note:** The options and values returned by `getBoxToBoxArrow` are in the same format as the options and values for `getArrow`.
+
+```js
+const arrow = getBoxToBoxArrow(0, 0, 96, 128, 400, 200, 128, 96 {
+  bow: 0,
+  stretch: 0.5,
+  stretchMin: 0,
+  stretchMax: 420,
+  padStart: 0,
+  padEnd: 0,
+  flip: false,
+  straights: true,
+})
+
+const [sx, sy, cx, cy, ex, ey, ae, as, sc] = arrow
+```
+
+#### Arguments
+
+| Argument | Type   | Description                                                                 |
+| -------- | ------ | --------------------------------------------------------------------------- |
+| `x0`     | number | The x position of the first rectangle.                                      |
+| `y0`     | number | The y position of the first rectangle.                                      |
+| `w0`     | number | The width of the first rectangle.                                           |
+| `h0`     | number | The height of the first rectangle.                                          |
+| `x1`     | number | The x position of the second rectangle.                                     |
+| `y1`     | number | The y position of the second rectangle.                                     |
+| `w1`     | number | The width of the second rectangle.                                          |
+| `h1`     | number | The height of the second rectangle.                                         |
+| options  | object | An (optional) object containing one or more of the options described below. |
+
+#### Options
+
+See options in `getArrow` above. (Both functions use the same options object.)
+
+#### Returns
+
+See returns in `getArrow` above. (Both functions return the same set of values.)
+
+## Example: A React Box-to-box Arrow Component
+
+```jsx
+import * as React from "react"
+import { getArrow } from "perfect-arrows"
+
+export function PerfectArrow() {
+  const p1 = { x: 64, y: 64, w: 64, h: 64 }
+  const p2 = { x: 128, y: 96, w: 64, h: 64 }
+
+  const arrow = getBoxToBoxArrow(
+    p1.x,
+    p1.y,
+    p1.w,
+    p1.h,
+    p2.x,
+    p2.y,
+    p2.w,
+    p2.h,
+    {
+      padEnd: 20,
+    }
+  )
 
   const [sx, sy, cx, cy, ex, ey, ae, as, ec] = arrow
 
