@@ -42,8 +42,8 @@ export default function BoxToBox() {
   return (
     <section ref={ref}>
       <svg
-        viewBox="0 0 600 600"
-        style={{ height: 600, width: 600, border: "1px solid #000" }}
+        viewBox="0 0 1280 720"
+        style={{ width: 1280, height: 720, border: "1px solid #000" }}
         onClick={e => {
           const { pageX, pageY } = e
           setB2(b => ({

@@ -4,7 +4,7 @@ A set of functions for drawing perfect arrows between points and shapes.
 
 ![Example](/example.gif)
 
-👉 [Demo](https://example.steveruizok.vercel.app/)
+👉 [Demo](https://perfect-arrows.now.sh/)
 
 [![Edit example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/steveruizok/perfect-arrows/tree/master/example?fontsize=14&hidenavigation=1&theme=dark)
 
@@ -106,8 +106,8 @@ export function PerfectArrow() {
 
   return (
     <svg
-      viewBox="0 0 640 480"
-      style={{ width: 640, height: 480 }}
+      viewBox="0 0 720 480"
+      style={{ width: 720, height: 480 }}
       stroke="#000"
       fill="#000"
       strokeWidth={3}
@@ -135,7 +135,7 @@ You can use this information to draw an arc and arrow-heads. You can use the opt
 **Note:** The options and values returned by `getBoxToBoxArrow` are in the same format as the options and values for `getArrow`.
 
 ```js
-const arrow = getBoxToBoxArrow(0, 0, 96, 128, 400, 200, 128, 96 {
+const arrow = getBoxToBoxArrow(0, 0, 96, 128, 400, 200, 128, 96, {
   bow: 0,
   stretch: 0.5,
   stretchMin: 0,
@@ -191,7 +191,14 @@ export function PerfectArrow() {
     p2.w,
     p2.h,
     {
+      bow: 0.2,
+      stretch: 0.5,
+      stretchMin: 40,
+      stretchMax: 420,
+      padStart: 0,
       padEnd: 20,
+      flip: false,
+      straights: true,
     }
   )
 
@@ -201,8 +208,8 @@ export function PerfectArrow() {
 
   return (
     <svg
-      viewBox="0 0 640 480"
-      style={{ width: 640, height: 480 }}
+      viewBox="0 0 1280 720"
+      style={{ width: 1280, height: 720 }}
       stroke="#000"
       fill="#000"
       strokeWidth={3}

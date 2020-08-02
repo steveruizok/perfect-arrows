@@ -33,6 +33,10 @@
   "author": "Steve Ruiz <steveruizok@gmail.com>",
   "description": "Draw perfect arrows between points or shapes",
   "homepage": "https://github.com/steveruizok/perfect-arrows",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/steveruizok/perfect-arrows"
+  },
   "keywords": [
     "arrow",
     "2d",
