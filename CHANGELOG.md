@@ -1,3 +1,7 @@
+# 0.2.2
+
+- Fixes default `padStart` for box to box arrows.
+
 # 0.2.1
 
 - Adds box to box algorithm.
