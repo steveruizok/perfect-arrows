@@ -56,7 +56,7 @@ export default function getBoxToBoxArrow(
     stretch = 0.5,
     stretchMin = 0,
     stretchMax = 420,
-    padStart = 20,
+    padStart = 0,
     padEnd = 20,
     flip = false,
     straights = true,
