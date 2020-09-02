@@ -175,7 +175,7 @@ See returns in `getArrow` above. (Both functions return the same set of values.)
 
 ```jsx
 import * as React from "react"
-import { getArrow } from "perfect-arrows"
+import { getBoxToBoxArrow } from "perfect-arrows"
 
 export function PerfectArrow() {
   const p1 = { x: 64, y: 64, w: 64, h: 64 }
