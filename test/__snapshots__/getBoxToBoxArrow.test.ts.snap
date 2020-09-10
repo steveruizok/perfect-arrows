@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getBoxToBoxArrow it computes an arrow between boxes 1`] = `
+Array [
+  10,
+  10.000000000000002,
+  10.000000000000004,
+  10.000000000000004,
+  10,
+  10.000000000000007,
+  2.356194490192345,
+  -2.677945044588987,
+  0.7853981633974483,
+]
+`;
+
+exports[`getBoxToBoxArrow it computes an arrow between boxes with straights disabled 1`] = `
+Array [
+  10,
+  10.000000000000002,
+  10.000000000000004,
+  10.000000000000004,
+  10,
+  10.000000000000007,
+  2.356194490192345,
+  -2.677945044588987,
+  0.7853981633974483,
+]
+`;
+
+exports[`getBoxToBoxArrow it computes an arrow from a box back to itself 1`] = `
+Array [
+  10,
+  15,
+  -2.388680238973927e-15,
+  5.000000000000002,
+  -10,
+  15.000000000000004,
+  2.356194490192345,
+  0.7853981633974482,
+  0,
+]
+`;
+
+exports[`getBoxToBoxArrow it computes an arrow from a box back to itsself 1`] = `
+Array [
+  10,
+  15,
+  -2.388680238973927e-15,
+  5.000000000000002,
+  -10,
+  15.000000000000004,
+  2.356194490192345,
+  0.7853981633974482,
+  0,
+]
+`;
+
+exports[`getBoxToBoxArrow it computes an arrow from a large box to a small box 1`] = `
+Array [
+  10,
+  358.6644951140066,
+  295,
+  203.6319218241043,
+  580,
+  48.599348534201965,
+  -0.4982049089769774,
+  2.643387744612816,
+  -0.49820490897697733,
+]
+`;

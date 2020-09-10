@@ -367,7 +367,7 @@ export function getSegmentSegmentIntersection(
 /**
  * Get the intersection points between a line segment and a rectangle with rounded corners.
  * @param x0 The x-axis coordinate of the segment's starting point.
- * @param y0 The y-axis coordinate of ththe segment's ending point.
+ * @param y0 The y-axis coordinate of the segment's ending point.
  * @param x1 The delta-x of the ray.
  * @param y1 The delta-y of the ray.
  * @param x The x-axis coordinate of the rectangle.

@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getArrow it computes a bowwed arrow between points 1`] = `
+Array [
+  10,
+  10,
+  21.476103837238064,
+  -19.022076744761318,
+  30,
+  11,
+  1.2941554536186235,
+  1.9473539914150553,
+  0.049958395721942765,
+]
+`;
+
+exports[`getArrow it computes an arrow between points 1`] = `
+Array [
+  10,
+  10,
+  20,
+  20,
+  30,
+  30,
+  0.7853981633974483,
+  0.7853981633974483,
+  0.7853981633974483,
+]
+`;
+
+exports[`getArrow it computes an arrow from a point back to itself 1`] = `
+Array [
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  0,
+  0,
+  0,
+]
+`;
