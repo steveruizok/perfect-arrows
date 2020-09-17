@@ -9,7 +9,7 @@ export default function BoxToBox() {
   const [bow, setBow] = React.useState(0)
   const [stretch, setStretch] = React.useState(0.5)
   const [padStart, setPadStart] = React.useState(0)
-  const [padEnd, setPadEnd] = React.useState(20)
+  const [padEnd, setPadEnd] = React.useState(0)
   const [stretchMin, setStretchMin] = React.useState(0)
   const [stretchMax, setStretchMax] = React.useState(360)
   const [flip, setFlip] = React.useState(false)
@@ -38,6 +38,17 @@ export default function BoxToBox() {
   )
 
   const endAngleAsDegrees = ae * (180 / Math.PI)
+
+  const decorRadius = 6
+  const boxBorderWidth = 2
+  const decorationSize = decorRadius * 2 + boxBorderWidth
+  const decorOffsetX = ex - Math.cos(ae) * decorationSize
+  const decorOffsetY = ey - Math.sin(ae) * decorationSize
+
+  const decorationPoints =
+    `0,${-decorRadius} ${decorRadius * 2},0, 0,${decorRadius}`
+  const decorationTranform =
+    `translate(${decorOffsetX},${decorOffsetY}) rotate(${endAngleAsDegrees})`
 
   return (
     <section ref={ref}>
@@ -70,8 +81,8 @@ export default function BoxToBox() {
             <circle name="start-cirlce" cx={sx} cy={sy} r={4} />
             <polygon
               name="end-arrow"
-              points="0,-6 12,0, 0,6"
-              transform={`translate(${ex},${ey}) rotate(${endAngleAsDegrees})`}
+              points={decorationPoints}
+              transform={decorationTranform}
             />
           </>
         )}

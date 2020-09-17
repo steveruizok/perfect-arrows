@@ -151,8 +151,8 @@ export default function getBoxToBoxArrow(
   let i0 = getSegmentRoundedRectangleIntersectionPoints(
     cx0,
     cy0,
-    cx,
-    cy,
+    cx1,
+    cy1,
     px0,
     py0,
     pw0,
@@ -162,10 +162,10 @@ export default function getBoxToBoxArrow(
 
   // Get padded end point.
   let i1 = getSegmentRoundedRectangleIntersectionPoints(
+    cx0,
+    cy0,
     cx1,
     cy1,
-    cx,
-    cy,
     px1,
     py1,
     pw1,
@@ -173,13 +173,10 @@ export default function getBoxToBoxArrow(
     padEnd
   )
 
-  // If we don't have intersections, or if the distance between the
-  // intersections is very small, use the backup point-finding stategy
+  const boxesOverlapped =
+    x0 < x1 + w1 && x0 + w0 > x1 && y0 < y1 + h1 && y0 + h0 > y1
 
-  if (
-    !(i0[0] && i1[0]) ||
-    getDistance(i0[0][0], i0[0][1], i1[0][0], i1[0][1]) < padStart + padEnd
-  ) {
+  if (boxesOverlapped) {
     // Basically, shoot a ray based on the opposite angle between
     // the two centers, and see where it intersects the rectangles.
     // This part can definitely be improved!
