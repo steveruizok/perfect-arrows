@@ -3,13 +3,14 @@ import { getBoxToBoxArrow } from "perfect-arrows"
 
 export default function BoxToBox() {
   const ref = React.useRef<HTMLElement>(null)
-  const [b1, setB1] = React.useState({ x: 100, y: 200, w: 128, h: 200 })
-  const [b2, setB2] = React.useState({ x: 300, y: 301, w: 128, h: 128 })
+  const [b1, setB1] = React.useState({ x: 350, y: 200, w: 128, h: 200 })
+  const [b2, setB2] = React.useState({ x: 500, y: 301, w: 128, h: 128 })
 
-  const [bow, setBow] = React.useState(0)
+  const [bow, setBow] = React.useState(0.25)
   const [stretch, setStretch] = React.useState(0.5)
   const [padStart, setPadStart] = React.useState(0)
-  const [padEnd, setPadEnd] = React.useState(20)
+  const [padEnd, setPadEnd] = React.useState(16)
+  const [minDistance, setMinDistance] = React.useState(0)
   const [stretchMin, setStretchMin] = React.useState(0)
   const [stretchMax, setStretchMax] = React.useState(360)
   const [flip, setFlip] = React.useState(false)
@@ -34,10 +35,21 @@ export default function BoxToBox() {
       stretchMax,
       stretchMin,
       flip,
+      minDistance,
     }
   )
 
   const endAngleAsDegrees = ae * (180 / Math.PI)
+
+  const decorRadius = 6
+  const boxBorderWidth = 2
+  const decorationSize = decorRadius * 2 + boxBorderWidth
+  const decorOffsetX = ex - Math.cos(ae)
+  const decorOffsetY = ey - Math.sin(ae)
+
+  const decorationPoints = `0,${-decorRadius} ${decorRadius *
+    2},0, 0,${decorRadius}`
+  const decorationTranform = `translate(${decorOffsetX},${decorOffsetY}) rotate(${endAngleAsDegrees})`
 
   return (
     <section ref={ref}>
@@ -68,11 +80,10 @@ export default function BoxToBox() {
         {showDecorations && (
           <>
             <circle name="start-cirlce" cx={sx} cy={sy} r={4} />
-            <polygon
-              name="end-arrow"
-              points="0,-6 12,0, 0,6"
-              transform={`translate(${ex},${ey}) rotate(${endAngleAsDegrees})`}
-            />
+
+            <g transform={decorationTranform}>
+              <polygon name="end-arrow" points={decorationPoints} />
+            </g>
           </>
         )}
         <path
@@ -204,6 +215,17 @@ export default function BoxToBox() {
             onChange={e => setPadEnd(parseFloat(e.target.value))}
           />
           Pad End
+        </label>
+        <label>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={minDistance}
+            onChange={e => setMinDistance(parseFloat(e.target.value))}
+          />
+          Min Distance
         </label>
       </div>
     </section>

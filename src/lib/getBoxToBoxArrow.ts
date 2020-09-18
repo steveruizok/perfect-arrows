@@ -9,6 +9,7 @@ import {
   rotatePoint,
   getPointBetween,
   doRectanglesCollide,
+  // getSegmentSegmentIntersection,
   getRayRectangleIntersectionPoints,
   getSegmentRectangleIntersectionPoints,
   getSegmentRoundedRectangleIntersectionPoints,
@@ -23,6 +24,7 @@ export type ArrowOptions = {
   padEnd?: number
   flip?: boolean
   straights?: boolean
+  minDistance?: number
 }
 
 /**
@@ -60,6 +62,7 @@ export default function getBoxToBoxArrow(
     padEnd = 20,
     flip = false,
     straights = true,
+    minDistance = 0,
   } = options
 
   const cx0 = x0 + w0 / 2,
@@ -91,35 +94,6 @@ export default function getBoxToBoxArrow(
     pw1,
     ph1
   )
-
-  if (
-    straights &&
-    ([0, 1, Infinity].includes(angliness) || cx0 === cx1 || cy0 === cy1) &&
-    !isColliding
-  ) {
-    // Straight line between points
-    ;[[i0x, i0y]] = getSegmentRectangleIntersectionPoints(
-      cx0,
-      cy0,
-      cx1,
-      cy1,
-      px0,
-      py0,
-      pw0,
-      ph0
-    )
-    ;[[i1x, i1y]] = getSegmentRectangleIntersectionPoints(
-      cx0,
-      cy0,
-      cx1,
-      cy1,
-      px1,
-      py1,
-      pw1,
-      ph1
-    )
-    return [i0x, i0y, mx, my, i1x, i1y, angle, angle + Math.PI, angle]
-  }
 
   // ⤜⤏ Arrow is an arc!
 
@@ -173,44 +147,95 @@ export default function getBoxToBoxArrow(
     padEnd
   )
 
-  // If we don't have intersections, or if the distance between the
-  // intersections is very small, use the backup point-finding stategy
+  arc = bow + stretchEffect * stretch
+
+  let fallback = false
+
+  if (isColliding) {
+    fallback = true
+  } else {
+    const distanceBetween = getDistance(i0[0][0], i0[0][1], i1[0][0], i1[0][1])
+    if (distanceBetween < padStart + padEnd || distanceBetween < minDistance) {
+      fallback = true
+    }
+  }
 
   if (
-    !(i0[0] && i1[0]) ||
-    getDistance(i0[0][0], i0[0][1], i1[0][0], i1[0][1]) < padStart + padEnd
+    !fallback &&
+    straights &&
+    ([0, 1, Infinity].includes(angliness) || cx0 === cx1 || cy0 === cy1) &&
+    !isColliding
   ) {
-    // Basically, shoot a ray based on the opposite angle between
-    // the two centers, and see where it intersects the rectangles.
-    // This part can definitely be improved!
-
-    const [dx, dy] = getDelta(angle + Math.PI)
-    ;[[i0x, i0y]] = getRayRectangleIntersectionPoints(
+    // Straight line between points
+    ;[[i0x, i0y]] = getSegmentRectangleIntersectionPoints(
       cx0,
       cy0,
-      dx,
-      dy,
+      cx1,
+      cy1,
       px0,
       py0,
       pw0,
       ph0
     )
-    ;[[i1x, i1y]] = getRayRectangleIntersectionPoints(
+    ;[[i1x, i1y]] = getSegmentRectangleIntersectionPoints(
+      cx0,
+      cy0,
       cx1,
       cy1,
-      dx,
-      dy,
       px1,
       py1,
       pw1,
       ph1
     )
-    arc = (bow + stretchEffect * stretch) * -1
+    return [i0x, i0y, mx, my, i1x, i1y, angle, angle + Math.PI, angle]
+  }
+
+  if (fallback) {
+    // Basically, shoot a ray based on the opposite angle between
+    // the two centers, and see where it intersects the rectangles.
+    // This part can definitely be improved!
+
+    const hc = Math.PI / 2
+    const qc = Math.PI / 4
+
+    const halfcard = Math.abs((Math.abs(angle) % hc) - qc) / qc
+
+    const l = halfcard * qc
+
+    rot = 1
+
+    // l += (angliness * Math.PI) / 10
+
+    const [dx0, dy0] = getDelta(angle + (hc - qc) + l)
+    ;[[i0x, i0y]] = getRayRectangleIntersectionPoints(
+      cx0,
+      cy0,
+      dx0,
+      dy0,
+      px0,
+      py0,
+      pw0,
+      ph0
+    )
+
+    const [dx1, dy1] = getDelta(angle + (hc + qc) - l)
+    ;[[i1x, i1y]] = getRayRectangleIntersectionPoints(
+      cx1,
+      cy1,
+      dx1,
+      dy1,
+      px1,
+      py1,
+      pw1,
+      ph1
+    )
+
+    rot = 1
+    arc *= -1
   } else {
     // Otherwise, destructure out the intersection points
     ;[[i0x, i0y]] = i0
     ;[[i1x, i1y]] = i1
-    arc = bow + stretchEffect * stretch
   }
 
   // Step 3 ⤜⤏ Calculate arrow points using same algorithm as getArrow
