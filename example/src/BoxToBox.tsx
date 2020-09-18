@@ -9,7 +9,7 @@ export default function BoxToBox() {
   const [bow, setBow] = React.useState(0)
   const [stretch, setStretch] = React.useState(0.5)
   const [padStart, setPadStart] = React.useState(0)
-  const [padEnd, setPadEnd] = React.useState(0)
+  const [padEnd, setPadEnd] = React.useState(16)
   const [stretchMin, setStretchMin] = React.useState(0)
   const [stretchMax, setStretchMax] = React.useState(360)
   const [flip, setFlip] = React.useState(false)
@@ -41,14 +41,9 @@ export default function BoxToBox() {
 
   const decorRadius = 6
   const boxBorderWidth = 2
-  const decorationSize = decorRadius * 2 + boxBorderWidth
-  const decorOffsetX = ex - Math.cos(ae) * decorationSize
-  const decorOffsetY = ey - Math.sin(ae) * decorationSize
-
-  const decorationPoints =
-    `0,${-decorRadius} ${decorRadius * 2},0, 0,${decorRadius}`
-  const decorationTranform =
-    `translate(${decorOffsetX},${decorOffsetY}) rotate(${endAngleAsDegrees})`
+  const decorationPoints = `0,${-decorRadius} ${decorRadius *
+    2},0 0,${decorRadius}`
+  const decorationTranform = `translate(${ex},${ey}) rotate(${endAngleAsDegrees})`
 
   return (
     <section ref={ref}>

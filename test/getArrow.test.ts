@@ -1,4 +1,4 @@
-import { getArrow} from "../src"
+import { getArrow } from "../src"
 
 describe("getArrow", () => {
   test("it computes an arrow between points", () => {
@@ -10,7 +10,6 @@ describe("getArrow", () => {
   })
 
   test("it computes a bowwed arrow between points", () => {
-    expect(getArrow(10, 10, 30, 11, {bow: 1})).toMatchSnapshot()
+    expect(getArrow(10, 10, 30, 11, { bow: 1 })).toMatchSnapshot()
   })
-
 })

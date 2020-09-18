@@ -174,7 +174,7 @@ export default function getBoxToBoxArrow(
   )
 
   const boxesOverlapped =
-    x0 < x1 + w1 && x0 + w0 > x1 && y0 < y1 + h1 && y0 + h0 > y1
+    px0 < px1 + pw1 && px0 + pw0 > px1 && py0 < py1 + ph1 && py0 + ph0 > py1
 
   if (boxesOverlapped) {
     // Basically, shoot a ray based on the opposite angle between
