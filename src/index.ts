@@ -1,3 +1,8 @@
-import { getArrow, getBoxToBoxArrow, ArrowOptions } from "./lib"
+import {
+  getArrow,
+  getBoxToBoxArrow,
+  getBoxToSelfArrow,
+  ArrowOptions,
+} from "./lib"
 
-export { getArrow, getBoxToBoxArrow, ArrowOptions }
+export { getArrow, getBoxToBoxArrow, getBoxToSelfArrow, ArrowOptions }

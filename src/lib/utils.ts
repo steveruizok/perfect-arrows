@@ -590,3 +590,145 @@ export function getRaySegmentIntersection(
 export function getDelta(angle: number) {
   return [Math.cos(angle), Math.sin(angle)]
 }
+
+export function getCircleRoundedRectangleIntersection(
+  cx: number,
+  cy: number,
+  cr: number,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  const mx = x + w,
+    my = y + h,
+    rx = x + r,
+    ry = y + r,
+    mrx = x + w - r,
+    mry = y + h - r
+
+  const segments = [
+    [x, mry, x, ry, x, y],
+    [rx, y, mrx, y, mx, y],
+    [mx, ry, mx, mry, mx, my],
+    [mrx, my, rx, my, x, my],
+  ]
+
+  const corners = [
+    [rx, ry, Math.PI, Math.PI * 1.5],
+    [mrx, ry, Math.PI * 1.5, Math.PI * 2],
+    [mrx, mry, 0, Math.PI * 0.5],
+    [rx, mry, Math.PI * 0.5, Math.PI],
+  ]
+
+  let points: number[][] = []
+
+  segments.forEach((segment, i) => {
+    const [px0, py0, px1, py1] = segment
+    const [cx1, cy1, as, ae] = corners[i]
+
+    getCircleCircleIntersection(cx, cy, cr, cx1, cy1, r)
+      .filter(pt => {
+        if (pt.length === 0) return false
+
+        const pointAngle = normalizeAngle(getAngle(cx, cy, pt[0], pt[1]))
+        return pointAngle > as && pointAngle < ae
+      })
+      .forEach(pt => points.push(pt))
+
+    const segmentInts = getSegmentCircleIntersections(
+      cx,
+      cy,
+      cr,
+      px0,
+      py0,
+      px1,
+      py1
+    )
+
+    points.push(...segmentInts)
+  })
+
+  return points
+}
+
+/**
+ * Get points at which two circles intersect.
+ * @param cx0
+ * @param cy0
+ * @param r0
+ * @param cx1
+ * @param cy1
+ * @param r1
+ */
+export function getCircleCircleIntersection(
+  cx0: number,
+  cy0: number,
+  r0: number,
+  cx1: number,
+  cy1: number,
+  r1: number
+): number[][] {
+  var a: number,
+    x: number,
+    y: number,
+    d: number,
+    h: number,
+    rx: number,
+    ry: number
+  var x2: number, y2: number
+
+  /* x and y are the vertical and horizontal distances between
+   * the circle centers.
+   */
+  x = cx1 - cx0
+  y = cy1 - cy0
+
+  /* Determine the straight-line distance between the centers. */
+  d = Math.hypot(y, x)
+
+  /* Check for solvability. */
+  if (d > r0 + r1) {
+    /* no solution. circles do not intersect. */
+    return []
+  }
+  if (d < Math.abs(r0 - r1)) {
+    /* no solution. one circle is contained in the other */
+    return []
+  }
+
+  /* 'point 2' is the point where the line through the circle
+   * intersection points crosses the line between the circle
+   * centers.
+   */
+
+  /* Determine the distance from point 0 to point 2. */
+  a = (r0 * r0 - r1 * r1 + d * d) / (2.0 * d)
+
+  /* Determine the coordinates of point 2. */
+  x2 = cx0 + (x * a) / d
+  y2 = cy0 + (y * a) / d
+
+  /* Determine the distance from point 2 to either of the
+   * intersection points.
+   */
+  h = Math.sqrt(r0 * r0 - a * a)
+
+  /* Now determine the offsets of the intersection points from
+   * point 2.
+   */
+  rx = -y * (h / d)
+  ry = x * (h / d)
+
+  /* Determine the absolute intersection points. */
+  var xi = x2 + rx
+  var xi_prime = x2 - rx
+  var yi = y2 + ry
+  var yi_prime = y2 - ry
+
+  return [
+    [xi, yi],
+    [xi_prime, yi_prime],
+  ]
+}
