@@ -1,3 +1,7 @@
+# 0.3.1
+
+- Updates dependencies.
+
 # 0.3.0
 
 - Updates box to box arrow function. The arc of an arrow is now calculated based on its proximity as well as its angle. The start and end positions are smarter, allowing for better overlap handling. Edge cases (especially around corner end points) are fixed. Ever-more perfect arrows!
