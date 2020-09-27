@@ -6,7 +6,7 @@ import {
   getPointBetween,
   getSector,
   rotatePoint,
-  mod,
+  modulate,
 } from "./utils"
 
 export type ArrowOptions = {
@@ -104,7 +104,8 @@ export default function getArrow(
   let rot = (getSector(angle) % 2 === 0 ? 1 : -1) * (flip ? -1 : 1)
 
   // Calculate how much the line should "bow" away from center
-  const arc = bow + mod(dist, [stretchMin, stretchMax], [1, 0], true) * stretch
+  const arc =
+    bow + modulate(dist, [stretchMin, stretchMax], [1, 0], true) * stretch
 
   // Step 1 ⤜⤏ Find padded points.
 
