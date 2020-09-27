@@ -152,7 +152,7 @@ export default function getBoxToBoxArrow(
   )
 
   // What should the curved line's arc be?
-  let arc = (bow + stretchEffect * stretch) / 2
+  let arc = bow + stretchEffect * stretch
 
   // How much should the angle's intermediacy (45degree-ness) affect the angle?
   let angleOffset = modulate(
@@ -218,7 +218,7 @@ export default function getBoxToBoxArrow(
     tsy,
     smpx,
     smpy,
-    isColliding ? overlapEffect : distEffect
+    isColliding ? overlapEffect : 0.15
   )
 
   /* ------------------ ENDING POINT ------------------ */

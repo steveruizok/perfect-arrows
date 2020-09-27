@@ -1,3 +1,7 @@
+# 0.3.2
+
+- Improves start point when not colliding.
+
 # 0.3.1
 
 - Updates dependencies.
