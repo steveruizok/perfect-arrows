@@ -16,9 +16,6 @@
     "typescript": "~3.7.2",
     "perfect-arrows": "latest"
   },
-  "devDependencies": {
-    "perfect-arrows": "../"
-  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
