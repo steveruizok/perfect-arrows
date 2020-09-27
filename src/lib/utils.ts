@@ -1,19 +1,39 @@
+const PI = Math.PI
+
 /**
  * Modulate a value between two ranges.
  * @param value
- * @param a from [low, high]
- * @param b to [low, high]
+ * @param rangeA from [low, high]
+ * @param rangeB to [low, high]
  * @param clamp
  */
-export function mod(value: number, a: number[], b: number[], clamp = false) {
-  const [low, high] = b[0] < b[1] ? [b[0], b[1]] : [b[1], b[0]]
-  const result = b[0] + ((value - a[0]) / (a[1] - b[0])) * (b[1] - b[0])
-
-  if (clamp) {
-    if (result < low) return low
-    if (result > high) return high
+export function modulate(
+  value: number,
+  rangeA: number[],
+  rangeB: number[],
+  clamp = false
+) {
+  const [fromLow, fromHigh] = rangeA
+  const [toLow, toHigh] = rangeB
+  const result =
+    toLow + ((value - fromLow) / (fromHigh - fromLow)) * (toHigh - toLow)
+  if (clamp === true) {
+    if (toLow < toHigh) {
+      if (result < toLow) {
+        return toLow
+      }
+      if (result > toHigh) {
+        return toHigh
+      }
+    } else {
+      if (result > toLow) {
+        return toLow
+      }
+      if (result < toHigh) {
+        return toHigh
+      }
+    }
   }
-
   return result
 }
 
@@ -101,7 +121,7 @@ export function getPointBetween(
  * @param s The number of sectors to check.
  */
 export function getSector(a: number, s = 8) {
-  return Math.floor(s * (0.5 + ((a / (Math.PI * 2)) % s)))
+  return Math.floor(s * (0.5 + ((a / (PI * 2)) % s)))
 }
 
 /**
@@ -402,10 +422,10 @@ export function getSegmentRoundedRectangleIntersectionPoints(
   ]
 
   const corners = [
-    [rx, ry, Math.PI, Math.PI * 1.5],
-    [mrx, ry, Math.PI * 1.5, Math.PI * 2],
-    [mrx, mry, 0, Math.PI * 0.5],
-    [rx, mry, Math.PI * 0.5, Math.PI],
+    [rx, ry, PI, PI * 1.5],
+    [mrx, ry, PI * 1.5, PI * 2],
+    [mrx, mry, 0, PI * 0.5],
+    [rx, mry, PI * 0.5, PI],
   ]
 
   let points: number[][] = []
@@ -506,7 +526,7 @@ export function getSegmentCircleIntersections(
  * @param radians The radians quantity to normalize.
  */
 export function normalizeAngle(radians: number) {
-  return radians - Math.PI * 2 * Math.floor(radians / (Math.PI * 2))
+  return radians - PI * 2 * Math.floor(radians / (PI * 2))
 }
 
 /**
@@ -589,4 +609,214 @@ export function getRaySegmentIntersection(
  */
 export function getDelta(angle: number) {
   return [Math.cos(angle), Math.sin(angle)]
+}
+
+export function getIntermediate(angle: number) {
+  return Math.abs(Math.abs(angle % (PI / 2)) - PI / 4) / (PI / 4)
+}
+
+/**
+ * Get a line between two rounded rectangles.
+ * @param x0
+ * @param y0
+ * @param w0
+ * @param h0
+ * @param r0
+ * @param x1
+ * @param y1
+ * @param w1
+ * @param h1
+ * @param r1
+ */
+export function getLineBetweenRoundedRectangles(
+  x0: number,
+  y0: number,
+  w0: number,
+  h0: number,
+  r0: number,
+  x1: number,
+  y1: number,
+  w1: number,
+  h1: number,
+  r1: number
+) {
+  const cx0 = x0 + w0 / 2,
+    cy0 = y0 + h0 / 2,
+    cx1 = x1 + w1 / 2,
+    cy1 = y1 + h1 / 2,
+    [[di0x, di0y]] = getRayRoundedRectangleIntersection(
+      cx0,
+      cy0,
+      cx1 - cx0,
+      cy1 - cy0,
+      x0,
+      y0,
+      w0,
+      h0,
+      r0
+    ) || [[cx0, cy0]],
+    [[di1x, di1y]] = getRayRoundedRectangleIntersection(
+      cx1,
+      cy1,
+      cx0 - cx1,
+      cy0 - cy1,
+      x1,
+      y1,
+      w1,
+      h1,
+      r1
+    ) || [[cx1, cy1]]
+
+  return [di0x, di0y, di1x, di1y]
+}
+
+/**
+ * Get the intersection points between a ray and a rectangle with rounded corners.
+ * @param ox The x-axis coordinate of the ray's origin.
+ * @param oy The y-axis coordinate of the ray's origin.
+ * @param dx The delta-x of the ray.
+ * @param dy The delta-y of the ray.
+ * @param x The x-axis coordinate of the rectangle.
+ * @param y The y-axis coordinate of the rectangle.
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ * @param r The corner radius of the rectangle.
+ */
+export function getRayRoundedRectangleIntersection(
+  ox: number,
+  oy: number,
+  dx: number,
+  dy: number,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  const mx = x + w,
+    my = y + h,
+    rx = x + r - 1,
+    ry = y + r - 1,
+    mrx = x + w - r + 1,
+    mry = y + h - r + 1
+
+  const segments = [
+    [x, mry, x, ry],
+    [rx, y, mrx, y],
+    [mx, ry, mx, mry],
+    [mrx, my, rx, my],
+  ]
+
+  const corners = [
+    [rx, ry, Math.PI, Math.PI * 1.5],
+    [mrx, ry, Math.PI * 1.5, Math.PI * 2],
+    [mrx, mry, 0, Math.PI * 0.5],
+    [rx, mry, Math.PI * 0.5, Math.PI],
+  ]
+
+  let points: number[][] = []
+
+  segments.forEach((segment, i) => {
+    const [px0, py0, px1, py1] = segment
+    const [cx, cy, as, ae] = corners[i]
+
+    const intersections = getRayCircleIntersection(cx, cy, r, ox, oy, dx, dy)
+
+    intersections &&
+      intersections
+        .filter(pt => {
+          const pointAngle = normalizeAngle(getAngle(cx, cy, pt[0], pt[1]))
+          return pointAngle > as && pointAngle < ae
+        })
+        .forEach(pt => points.push(pt))
+
+    const segmentInt = getRaySegmentIntersection(
+      ox,
+      oy,
+      dx,
+      dy,
+      px0,
+      py0,
+      px1,
+      py1
+    )
+
+    if (!!segmentInt) {
+      points.push(segmentInt)
+    }
+  })
+
+  return points
+}
+
+export function getRectangleSegmentIntersectedByRay(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  ox: number,
+  oy: number,
+  dx: number,
+  dy: number
+) {
+  return getRectangleSegments(x, y, w, h).find(([sx0, sy0, sx1, sy1]) =>
+    getRaySegmentIntersection(ox, oy, dx, dy, sx0, sy0, sx1, sy1)
+  )
+}
+
+export function getRectangleSegments(
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) {
+  return [
+    [x, y, x + w, y],
+    [x + w, y, x + w, y + h],
+    [x + w, y + h, x, y + h],
+    [x, y + h, x, y],
+  ]
+}
+
+export function getRoundedRectangleSegments(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  const rx = x + r,
+    ry = y + r,
+    mx = x + w,
+    my = y + h,
+    mrx = x + w - r,
+    mry = y + h - r
+
+  return [
+    [x, mry, x, ry, x, y],
+    [rx, y, mrx, y, mx, y],
+    [mx, ry, mx, mry, mx, my],
+    [mrx, my, rx, my, x, my],
+  ]
+}
+
+export function getRayCircleIntersection(
+  cx: number,
+  cy: number,
+  r: number,
+  ox: number,
+  oy: number,
+  dx: number,
+  dy: number
+) {
+  // This is a shitty hack
+  return getSegmentCircleIntersections(
+    cx,
+    cy,
+    r,
+    ox,
+    oy,
+    dx * 999999,
+    dy * 999999
+  )
 }
