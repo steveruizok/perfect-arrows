@@ -1,3 +1,9 @@
+# 0.3.3
+
+- Improves arc effects on near-overlaps.
+- Sets a minimum angle to correct double-connected boxes. This still isn't exactly right, but it's an improvement!
+- Improves perfect center overlap handling.
+
 # 0.3.2
 
 - Improves start point when not colliding.

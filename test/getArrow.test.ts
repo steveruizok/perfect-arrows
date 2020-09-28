@@ -9,7 +9,7 @@ describe("getArrow", () => {
     expect(getArrow(10, 10, 10, 10)).toMatchSnapshot()
   })
 
-  test("it computes a bowwed arrow between points", () => {
+  test("it computes a bowed arrow between points", () => {
     expect(getArrow(10, 10, 30, 11, { bow: 1 })).toMatchSnapshot()
   })
 })

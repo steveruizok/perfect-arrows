@@ -26,6 +26,7 @@ export type ArrowOptions = {
 }
 
 const PI = Math.PI
+const MIN_ANGLE = PI / 24
 
 /**
  * getArrowBetweenBoxes
@@ -85,7 +86,11 @@ export default function getBoxToBoxArrow(
 
   // Perfect overlap, no arrow.
   if (distance === 0) {
-    return [cx0, cy0, cx1, cy1, cx1, cy1, 0, 0, 0]
+    const [sx, sy] = [cx0, py0]
+    const [ex, ey] = [cx1, py1]
+    const [cx, cy] = getPointBetween(sx, sy, ex, ey, 0.5)
+    const ca = getAngle(sx, sy, ex, ey)
+    return [sx, sy, cx, cy, ex, ey, ca, ca, ca]
   }
 
   // Rotation of the arrow, clockwise or anticlockwise
@@ -156,7 +161,7 @@ export default function getBoxToBoxArrow(
 
   // How much should the angle's intermediacy (45degree-ness) affect the angle?
   let angleOffset = modulate(
-    card, // a better curve here?
+    card * card, // a better curve here?
     [0, 1],
     [PI * 0.125, 0],
     true
@@ -171,14 +176,16 @@ export default function getBoxToBoxArrow(
         true
       ) * card
 
+  const combinedOffset =
+    distOffset + angleOffset * (isColliding ? 1 - overlapEffect : 1)
+
   /* ----------------- STARTING POINT ----------------- */
 
   // Angle of the first box
   const finalAngle0 =
     overlapEffect >= 0.5
       ? angle + PI * rot
-      : angle +
-        (distOffset + angleOffset * (isColliding ? 1 - overlapEffect : 1)) * rot
+      : angle + Math.max(MIN_ANGLE, combinedOffset) * rot
 
   // Deltas of starting angle
   const [dx0, dy0] = getDelta(finalAngle0)
@@ -218,8 +225,14 @@ export default function getBoxToBoxArrow(
     tsy,
     smpx,
     smpy,
-    isColliding ? overlapEffect : 0.15
+    isColliding ? Math.max(overlapEffect, 0.15) : 0.15
   )
+
+  arc *= 1 + (Math.max(-2, Math.min(distEffect, 2)) * card - overlapEffect) / 2
+
+  if (isColliding) {
+    arc = arc < 0 ? Math.min(arc, -0.5) : Math.max(arc, 0.5)
+  }
 
   /* ------------------ ENDING POINT ------------------ */
 
@@ -239,6 +252,7 @@ export default function getBoxToBoxArrow(
       padEnd
     )
   } else {
+    // Calculate an angle based on distance, overlap and intermediacy
     const distOffset1 = modulate(distEffect, [0.75, 1], [0, 1], true)
 
     const overlapEffect1 = isColliding
@@ -247,14 +261,15 @@ export default function getBoxToBoxArrow(
 
     const cardEffect1 = modulate(card * distOffset1, [0, 1], [0, PI / 16], true)
 
+    const combinedOffset =
+      distEffect * (PI / 12) +
+      (cardEffect1 + overlapEffect1) +
+      (distOffset + angleOffset) / 2
+
     const finalAngle1 =
       overlapEffect >= 0.5
         ? angle + PI * rot
-        : angle +
-          PI -
-          (distEffect * (PI / 12) * rot +
-            (cardEffect1 + overlapEffect1) * rot +
-            ((distOffset + angleOffset) * rot) / 2)
+        : angle + PI - Math.max(combinedOffset, MIN_ANGLE) * rot
 
     // Deltas of ending angle
     const [dx1, dy1] = getDelta(finalAngle1)
@@ -286,9 +301,10 @@ export default function getBoxToBoxArrow(
 
     if (!endSeg) throw Error
 
-    // Find end point (half way between segment midpoint and ray intersection)
     const [sex0, sey0, sex1, sey1] = endSeg
     const [empx, empy] = getPointBetween(sex0, sey0, sex1, sey1, 0.5)
+
+      // Offset end point toward segment midpoint
     ;[ex, ey] = getPointBetween(
       tex,
       tey,
@@ -297,13 +313,6 @@ export default function getBoxToBoxArrow(
       0.25 + overlapEffect * 0.25
     )
   }
-
-  if (isColliding) {
-    arc += overlapEffect / 2
-  }
-
-  // Make the arc more arcy depending on distance and angle intermediacy.
-  arc *= 1 + (distEffect * card - overlapEffect) / 2
 
   /* ------------------- DRAW ARROWS ------------------ */
 
@@ -314,7 +323,7 @@ export default function getBoxToBoxArrow(
     sy,
     ex,
     ey,
-    Math.max(-2, Math.min(2, 0.5 + arc)) // Clamped to 2
+    Math.max(-1, Math.min(1, 0.5 + arc)) // Clamped to 2
   )
 
   // Rotate them (these are our two potential corners)
@@ -332,5 +341,5 @@ export default function getBoxToBoxArrow(
   const as = getAngle(cix, ciy, sx, sy)
   const ae = getAngle(cix, ciy, ex, ey)
 
-  return [sx, sy, cix, ciy, ex, ey, ae, as, angle]
+  return [sx, sy, cix, ciy, ex, ey, ae, as, getAngle(sx, sy, ex, ey)]
 }
