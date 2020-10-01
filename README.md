@@ -2,8 +2,8 @@
 
 A set of functions for drawing perfect arrows between points and shapes.
 
-- [`getArrow`](/README.md#getarrowx0-y0-x1-y1-options) - For point-to-point arrows.
-- [`getBoxToBoxArrow`](/README.md#getboxtoboxarrowx0-y0-w0-h0-x1-y1-w1-h1-options) - For rectangle-to-rectangle arrows.
+- [`getArrow`](#getarrowx0-y0-x1-y1-options) - For point-to-point arrows.
+- [`getBoxToBoxArrow`](#getboxtoboxarrowx0-y0-w0-h0-x1-y1-w1-h1-options) - For rectangle-to-rectangle arrows.
 
 ![Example](/example.gif)
 
