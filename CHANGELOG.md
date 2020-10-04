@@ -1,3 +1,7 @@
+# 0.4.0
+
+- Adds `getPolygonToPolygonArrow`. This adds the library's first dependencies.
+
 # 0.3.3
 
 - Improves arc effects on near-overlaps.

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.3",
+  "version": "0.4.0-beta",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,9 +47,14 @@
   ],
   "module": "dist/perfect-arrows.esm.js",
   "devDependencies": {
+    "@types/polylabel": "^1.0.5",
     "husky": "^4.2.5",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "polygon-offset": "^0.3.1",
+    "polylabel": "^1.1.0"
   }
 }

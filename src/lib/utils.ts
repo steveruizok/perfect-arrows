@@ -820,3 +820,130 @@ export function getRayCircleIntersection(
     dy * 999999
   )
 }
+
+// Helpers for pointInPolygon
+const ccw = (A: number[], B: number[], C: number[]) =>
+  (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+
+const intersect = (A: number[], B: number[], C: number[], D: number[]) =>
+  ccw(A, C, D) !== ccw(B, C, D) && ccw(A, B, C) !== ccw(A, B, D)
+
+/**
+ * Check whether a point is inside of a polygon.
+ * @param point
+ * @param points
+ */
+export const pointInPolygon = (point: number[], points: number[][]) => {
+  let inside: boolean = false
+  let i: number = 0
+  let j: number = points.length - 1
+
+  while (i < points.length) {
+    if (
+      intersect([-999999, point[1]], [point[0], point[1]], points[i], points[j])
+    ) {
+      inside = !inside
+    }
+    j = i++
+  }
+  return inside
+}
+
+/**
+ * Check if two polygons collide.
+ * @param polyA
+ * @param polyB
+ */
+export function doPolygonsCollide(polyA: number[][], polyB: number[][]) {
+  for (let point of polyA) {
+    if (pointInPolygon(point, polyB)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Casts a ray in a given direction and check if it hits something.
+ * @param from [x, y]
+ * @param direction: [deltaX, deltaY]
+ * @param hitTest (point) => hit
+ * @param maxDistance number
+ * @param minDistance number
+ */
+export function castRay<T = any>(
+  from: number[],
+  direction: number[],
+  hitTest: (info: { point: number[] }) => T,
+  maxDistance: number = 9999,
+  minDistance: number = 0
+): {
+  hit?: T
+  point: number[]
+} {
+  let stepLength = Math.hypot(direction[0], direction[1])
+
+  if (stepLength < minDistance) {
+    return {
+      hit: undefined,
+      point: [...from],
+    }
+  }
+
+  const position = [Math.floor(from[0]) | 0, Math.floor(from[1]) | 0]
+
+  const delta = [direction[0] / stepLength, direction[1] / stepLength]
+
+  const step = [delta[0] > 0 ? 1 : -1, delta[1] > 0 ? 1 : -1]
+
+  const positionDelta = [
+    step[0] > 0 ? position[0] + 1 - from[0] : from[0] - position[0],
+    step[1] > 0 ? position[1] + 1 - from[1] : from[1] - position[1],
+  ]
+
+  const stepDelta = [2, 2]
+
+  const stepped = [
+    stepDelta[0] < Infinity ? stepDelta[0] * positionDelta[0] : Infinity,
+    stepDelta[1] < Infinity ? stepDelta[1] * positionDelta[1] : Infinity,
+  ]
+
+  let hit: T | undefined = undefined
+  let point = [...from]
+  let steppedDistance = 0.0
+
+  function moveAlongXAxis() {
+    position[0] += step[0]
+    stepped[0] += stepDelta[0]
+    steppedDistance = stepped[0]
+  }
+
+  function moveAlongYAxis() {
+    position[1] += step[1]
+    stepped[1] += stepDelta[1]
+    steppedDistance = stepped[1]
+  }
+
+  while (steppedDistance <= maxDistance) {
+    stepped[0] < stepped[1] ? moveAlongXAxis() : moveAlongYAxis()
+
+    point[0] = from[0] + steppedDistance * delta[0]
+    point[1] = from[1] + steppedDistance * delta[1]
+
+    hit = hitTest({
+      point,
+    })
+
+    if (hit !== undefined) {
+      return {
+        hit,
+        point,
+      }
+    }
+  }
+
+  return {
+    hit,
+    point,
+  }
+}
