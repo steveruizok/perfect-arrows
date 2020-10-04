@@ -71,15 +71,15 @@ export default function getPolygonToPolygonArrow(
 
   let {
     point: [sx, sy],
-  } = castRay([cx0, cy0], [dx, dy], ({ point }) => {
+  } = castRay([cx0, cy0], [dx, dy], point => {
     if (!pointInPolygon(point, vertsA[0])) return true
     return
   })
 
   let {
     point: [ex, ey],
-  } = castRay([sx, sy], [dx, dy], ({ point }) => {
-    if (pointInPolygon(point, vertsB[0])) return true
+  } = castRay([cx1, cy1], [-dx, -dy], point => {
+    if (!pointInPolygon(point, vertsB[0])) return true
     return
   })
 
@@ -163,7 +163,7 @@ export default function getPolygonToPolygonArrow(
   // Deltas of starting angle
   const [dx0, dy0] = getDelta(finalAngle0)
 
-  const start = castRay([cx0, cy0], [dx0, dy0], ({ point }) => {
+  const start = castRay([cx0, cy0], [dx0, dy0], point => {
     if (!pointInPolygon(point, vertsA[0])) return true
     return
   })
@@ -192,7 +192,7 @@ export default function getPolygonToPolygonArrow(
   // Deltas of ending angle
   const [dx1, dy1] = getDelta(finalAngle1)
 
-  const end = castRay([cx1, cy1], [dx1, dy1], ({ point }) => {
+  const end = castRay([cx1, cy1], [dx1, dy1], point => {
     if (!pointInPolygon(point, vertsB[0])) return true
     return
   })
