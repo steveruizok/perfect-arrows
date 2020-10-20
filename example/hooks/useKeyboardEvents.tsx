@@ -3,12 +3,12 @@ import { handleKeyDown, handleKeyUp } from "../components/utils"
 
 export default function useKeyboardEvents() {
   useEffect(() => {
-    document.body.addEventListener("keydown", handleKeyDown)
-    document.body.addEventListener("keyup", handleKeyUp)
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
 
     return () => {
-      document.body.removeEventListener("keydown", handleKeyDown)
-      document.body.removeEventListener("keyup", handleKeyUp)
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
     }
   }, [])
 }

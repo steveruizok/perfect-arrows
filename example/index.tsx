@@ -3,6 +3,7 @@ import * as React from "react"
 import ReactDOM from "react-dom"
 import { styled } from "./theme"
 
+import useKeyboardEvents from "./hooks/useKeyboardEvents"
 import useWindowEvents from "./hooks/useWindowEvents"
 import useViewBox from "./hooks/useViewBox"
 
@@ -23,6 +24,7 @@ export default function App() {
   const { ref, width, height } = useViewBox()
 
   useWindowEvents()
+  useKeyboardEvents()
 
   return (
     <Container ref={ref}>

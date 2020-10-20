@@ -19,30 +19,24 @@ export default function Toolbar() {
       <ButtonGroup>
         <IconButton
           src="Select"
-          isActive={local.isIn("selecting")}
+          isActive={local.isIn("selectTool")}
           event="SELECTED_SELECT_TOOL"
           shortcut="V"
         />
         <IconButton
           src="Box"
-          isActive={local.isIn("drawing")}
+          isActive={local.isIn("boxTool")}
           onClick={() => state.send("SELECTED_BOX_TOOL")}
           event="SELECTED_BOX_TOOL"
           shortcut="F"
         />
-        <Divider />
         <IconButton
           src="Arrow"
           event="STARTED_PICKING_ARROW"
           shortcut="A"
           disabled={!hasSelectedBox}
         />
-        <IconButton
-          src="Delete"
-          event="DELETED_SELECTED"
-          shortcut="⌫"
-          disabled={!hasSelection}
-        />
+        <Divider />
         <IconButton
           src="FlipArrow"
           event="FLIPPED_ARROWS"
@@ -116,6 +110,13 @@ export default function Toolbar() {
           event="DISTRIBUTED_Y"
           disabled={!hasManySelectedBoxes}
           shortcut="⌥ ⌃ V"
+        />
+        <Divider />
+        <IconButton
+          src="Delete"
+          event="DELETED_SELECTED"
+          shortcut="⌫"
+          disabled={!hasSelection}
         />
       </ButtonGroup>
       <ButtonGroup>

@@ -54,9 +54,9 @@ class Surface {
     this.save()
 
     this.allBoxes = Object.values(state.data.boxes)
-    this.inView = this.allBoxes.filter(box =>
-      doBoxesCollide(box, state.data.viewBox.document)
-    )
+    this.inView = this.allBoxes
+      .filter(box => doBoxesCollide(box, state.data.viewBox.document))
+      .sort((a, b) => b.z - a.z)
 
     this.loop()
   }
@@ -73,9 +73,9 @@ class Surface {
     }
 
     this.allBoxes = Object.values(state.data.boxes)
-    this.inView = this.allBoxes.filter(box =>
-      doBoxesCollide(box, state.data.viewBox.document)
-    )
+    this.inView = this.allBoxes
+      .filter(box => doBoxesCollide(box, state.data.viewBox.document))
+      .sort((a, b) => a.z - b.z)
 
     this.clear()
     this.draw()
@@ -90,7 +90,7 @@ class Surface {
 
   draw() {
     this.setupCamera()
-    this.renderBoxes()
+    this.renderCanvasThings()
     if (!this.state.isIn("dragging")) {
       this.renderSelection()
       this.renderBrush()
@@ -107,7 +107,7 @@ class Surface {
     this.lineWidth = 1 / camera.zoom
   }
 
-  renderBoxes() {
+  renderCanvasThings() {
     const { arrows } = this.state.data
 
     this.stroke = "#000"
@@ -119,6 +119,18 @@ class Surface {
 
     for (let arrow of Object.values(arrows)) {
       this.drawArrow(arrow)
+    }
+
+    const allSpawningBoxes = Object.values(state.data.spawning.boxes)
+    const inViewSpawningBoxes = allSpawningBoxes.filter(box =>
+      doBoxesCollide(box, state.data.viewBox.document)
+    )
+
+    for (let box of inViewSpawningBoxes) {
+      this.save()
+      this.stroke = "blue"
+      this.drawBox(box)
+      this.restore()
     }
   }
 
@@ -437,12 +449,12 @@ class Surface {
   getCursor(hit: Hit) {
     const { isIn } = this.state
 
-    if (isIn("dragging")) return "grab"
+    if (isIn("dragging")) return "none"
 
     switch (hit.type) {
       case "box":
       case "bounds": {
-        return "grab"
+        return "default"
       }
       case "bounds-corner": {
         return hit.corner % 2 === 0 ? "nwse-resize" : "nesw-resize"
@@ -451,7 +463,7 @@ class Surface {
         return hit.edge % 2 === 0 ? "ns-resize" : "ew-resize"
       }
       case "canvas": {
-        return "pointer"
+        return "default"
       }
     }
 

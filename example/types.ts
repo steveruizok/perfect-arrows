@@ -31,6 +31,7 @@ export interface IBox extends IFrame {
   id: string
   label: string
   color: string
+  z: number
 }
 
 export interface IBoxSnapshot extends IFrame {

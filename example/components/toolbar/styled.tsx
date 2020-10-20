@@ -28,7 +28,7 @@ export const ButtonGroup = styled.div({
 })
 
 export const Divider = styled.span({
-  padding: 4,
+  padding: "$2",
   color: "rgba(0,0,0,.5)",
 })
 
@@ -95,6 +95,8 @@ export const ShortcutHint = styled.div({
   fontSize: "$0",
   fontWeight: "bold",
   backgroundColor: "$muted",
+  position: "absolute",
+  top: "calc(100% + 2px)",
 })
 
 export const Spacer = styled.div({

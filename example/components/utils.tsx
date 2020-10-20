@@ -124,9 +124,15 @@ const keyDownActions = {
   Escape: "CANCELLED",
   Alt: "ENTERED_ALT_MODE",
   " ": "ENTERED_SPACE_MODE",
+  Backspace: "DELETED_SELECTED",
   Shift: "ENTERED_SHIFT_MODE",
   Control: "ENTERED_CONTROL_MODE",
   Meta: "ENTERED_META_MODE",
+  f: "SELECTED_BOX_TOOL",
+  v: "SELECTED_SELECT_TOOL",
+  r: "INVERTED_ARROWS",
+  t: "FLIPPED_ARROWS",
+  a: "STARTED_PICKING_ARROW",
 }
 
 const keyUpActions = {
@@ -135,8 +141,7 @@ const keyUpActions = {
   Shift: "EXITED_SHIFT_MODE",
   Control: "EXITED_CONTROL_MODE",
   Meta: "EXITED_META_MODE",
-  f: "SELECTED_DRAWING",
-  v: "SELECTED_SELECTING",
+  v: "SELECTED_SELECT_TOOL",
   r: "INVERTED_ARROWS",
   t: "FLIPPED_ARROWS",
   a: "STARTED_PICKING_ARROW",
@@ -149,9 +154,8 @@ export function testKeyCombo(event: string, ...keys: string[]) {
 export function handleKeyDown(e: KeyboardEvent) {
   pressedKeys[e.key] = true
   const action = keyDownActions[e.key]
-  if (action) {
-    state.send(action)
-  }
+  if (action) state.send(action)
+
   // Handle shift here?
 }
 
@@ -267,6 +271,7 @@ export function doBoxesCollide(a: IFrame, b: IFrame) {
 export function getBox(
   x: number,
   y: number,
+  z: number,
   width: number,
   height: number
 ): IBox {
@@ -274,6 +279,7 @@ export function getBox(
     id: "box" + uniqueId(),
     x,
     y,
+    z,
     width,
     height,
     label: "",

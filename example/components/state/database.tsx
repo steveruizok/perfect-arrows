@@ -1,7 +1,7 @@
 import { IBox, IArrow, IArrowType } from "../../types"
 import { getArrow } from "../utils"
 
-const RESET_LOCAL_DATA = false
+const RESET_LOCAL_DATA = true
 
 export const LOCAL_STORAGE_KEY = "perfect_arrows_example"
 
@@ -45,6 +45,7 @@ export function getInitialData(): {
         height: 100,
         label: "",
         color: "rgba(255, 255, 255, 1)",
+        z: 0,
       },
       box_a1: {
         id: "box_a1",
@@ -54,6 +55,7 @@ export function getInitialData(): {
         height: 100,
         label: "",
         color: "rgba(255, 255, 255, 1)",
+        z: 1,
       },
     }
 
@@ -68,6 +70,7 @@ export function getInitialData(): {
     //     height: Math.random() * 400,
     //     label: "",
     //     color: "#FFF",
+    // 		 z: i,
     //   }))
     //   .reduce((acc, cur) => {
     //     acc[cur.id] = cur

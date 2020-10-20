@@ -15,11 +15,18 @@ import {
   pressedKeys,
   viewBoxToCamera,
   getBoundingBox,
-  camera,
 } from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
 import * as BoxTransforms from "./box-transforms"
 import clamp from "lodash/clamp"
+import uniqueId from "lodash/uniqueId"
+import { v4 as uuid } from "uuid"
+
+const id = uuid()
+
+function getId() {
+  return uniqueId(id)
+}
 
 let resizer: BoxTransforms.EdgeResizer | BoxTransforms.CornerResizer
 const undos: string[] = []
@@ -35,6 +42,7 @@ let prevB: any = {}
 const state = createState({
   data: {
     ...getInitialData(),
+    zOrderedBoxes: [],
     surface: undefined as Surface | undefined,
     pointer: {
       x: 0,
@@ -88,13 +96,18 @@ const state = createState({
     SCROLLED_VIEWPORT: "updateViewBoxOnScroll",
     UPDATED_VIEWBOX: ["updateCameraOnViewBoxChange", "updateViewBox"],
   },
-  initial: "selecting",
+  initial: "selectTool",
   states: {
-    selecting: {
+    selectTool: {
       initial: "selectingIdle",
       states: {
         selectingIdle: {
           on: {
+            SELECTED_BOX_TOOL: { to: "boxTool" },
+            DELETED_SELECTED: {
+              if: "hasSelected",
+              do: ["saveUndoState", "deleteSelected", "updateBounds"],
+            },
             ALIGNED_LEFT: ["alignSelectedBoxesLeft", "updateBounds"],
             ALIGNED_RIGHT: ["alignSelectedBoxesRight", "updateBounds"],
             ALIGNED_CENTER_X: ["alignSelectedBoxesCenterX", "updateBounds"],
@@ -205,7 +218,36 @@ const state = createState({
         },
       },
     },
-
+    boxTool: {
+      initial: "boxIdle",
+      states: {
+        boxIdle: {
+          on: {
+            SELECTED_SELECT_TOOL: { to: "selectTool" },
+            STARTED_POINTING: { to: "drawingBox" },
+          },
+        },
+        drawingBox: {
+          initial: "drawingBoxIdle",
+          onEnter: "setBoxOrigin",
+          states: {
+            drawingBoxIdle: {
+              on: {
+                MOVED_POINTER: { to: "drawingBoxActive" },
+              },
+            },
+            drawingBoxActive: {
+              onEnter: ["saveUndoState", "clearSelection", "createDrawingBox"],
+              onExit: ["completeDrawingBox", "saveUndoState"],
+              on: {
+                MOVED_POINTER: { do: "updateDrawingBox" },
+                STOPPED_POINTING: { to: "selectingIdle" },
+              },
+            },
+          },
+        },
+      },
+    },
     // selected: {
     //   on: {
     //     DOWNED_POINTER: { do: "updateOrigin" },
@@ -460,6 +502,9 @@ const state = createState({
     isInShiftMode() {
       return pressedKeys.Shift
     },
+    hasSelected(data) {
+      return data.selectedBoxIds.length > 0
+    },
   },
   actions: {
     // Pointer ------------------------
@@ -575,6 +620,7 @@ const state = createState({
     },
     clearSelection(data) {
       data.selectedBoxIds = []
+      data.selectedArrowIds = []
       data.bounds = undefined
     },
     setInitialSelectedIds(data) {
@@ -760,6 +806,18 @@ const state = createState({
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.stretchBoxesY(selectedBoxes)
     },
+    deleteSelected(data) {
+      const { arrows, boxes, selectedBoxIds } = data
+      for (let id of selectedBoxIds) {
+        for (let arrow of Object.values(arrows)) {
+          if (arrow.to === id || arrow.from === id) {
+            delete arrows[arrow.id]
+          }
+        }
+        delete boxes[id]
+      }
+      selectedBoxIds.length = 0
+    },
     updateResizingBoxesToFreeRatio() {},
     updateResizingBoxesToLockedRatio() {},
     updateDraggingBoxesToFreeAxes() {},
@@ -780,9 +838,41 @@ const state = createState({
     flipArrowsToSelectedBoxes() {},
     invertArrowsToSelectedBoxes() {},
     // Drawing Box
-    createDrawingBox() {},
-    updateDrawingBox() {},
-    completeDrawingBox() {},
+    setBoxOrigin(data) {
+      data.initial.pointer = data.pointer
+    },
+    createDrawingBox(data) {
+      const { boxes, spawning, pointer, initial } = data
+      spawning.boxes = {
+        drawingBox: {
+          id: getId(),
+          x: Math.min(pointer.x, initial.pointer.x),
+          y: Math.min(pointer.y, initial.pointer.y),
+          width: Math.abs(pointer.x - initial.pointer.x),
+          height: Math.abs(pointer.y - initial.pointer.y),
+          label: "",
+          color: "#FFF",
+          z: Object.keys(boxes).length,
+        },
+      }
+    },
+    updateDrawingBox(data) {
+      const { spawning, pointer, initial } = data
+      const box = spawning.boxes.drawingBox
+      if (!box) return
+      box.x = Math.min(pointer.x, initial.pointer.x)
+      box.y = Math.min(pointer.y, initial.pointer.y)
+      box.width = Math.abs(pointer.x - initial.pointer.x)
+      box.height = Math.abs(pointer.y - initial.pointer.y)
+    },
+    completeDrawingBox(data) {
+      const { spawning, boxes } = data
+      const box = spawning.boxes.drawingBox
+      if (!box) return
+      boxes[box.id] = box
+      spawning.boxes = {}
+      data.selectedBoxIds = [box.id]
+    },
     clearDrawingBox() {},
     // Boxes
 
@@ -808,4 +898,4 @@ const state = createState({
 
 export default state
 
-// state.onUpdate((update) => console.log(state.active))
+// state.onUpdate(update => console.log(state.active))
