@@ -1,0 +1,6 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<line x1="0.5" y1="-0.5" x2="15.5" y2="-0.5" transform="matrix(1 0 0 -1 4 6)" stroke="black" stroke-linecap="round"/>
+<line x1="0.5" y1="-0.5" x2="15.5" y2="-0.5" transform="matrix(1 0 0 -1 4 18)" stroke="black" stroke-linecap="round"/>
+<path d="M7 18.5H11C11.2761 18.5 11.5 18.2761 11.5 18V7C11.5 6.72386 11.2761 6.5 11 6.5H7C6.72386 6.5 6.5 6.72386 6.5 7V18C6.5 18.2761 6.72386 18.5 7 18.5Z" fill="currentColor" stroke="black" stroke-linejoin="round"/>
+<path d="M14 18.5H17C17.2761 18.5 17.5 18.2761 17.5 18V7C17.5 6.72386 17.2761 6.5 17 6.5H14C13.7239 6.5 13.5 6.72386 13.5 7V18C13.5 18.2761 13.7239 18.5 14 18.5Z" fill="currentColor" stroke="black" stroke-linejoin="round"/>
+</svg>

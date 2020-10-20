@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.7273 17.5C3.53035 11.7609 6.60607 6.5 11 6.5" stroke="#BABABA"/>
+<circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="#BABABA"/>
+<path d="M11 4L16 6.5L11 9L11 4Z" fill="#BABABA"/>
+<path d="M18.2727 6.5C20.4696 12.2391 17.3939 17.5 13 17.5" stroke="black" stroke-linecap="round"/>
+<path d="M12.5 15.809L12.5 19.191L9.11803 17.5L12.5 15.809Z" fill="black" stroke="black"/>
+<path d="M18 7.5C18.8284 7.5 19.5 6.82843 19.5 6C19.5 5.17157 18.8284 4.5 18 4.5C17.1716 4.5 16.5 5.17157 16.5 6C16.5 6.82843 17.1716 7.5 18 7.5Z" fill="currentColor" stroke="black"/>
+</svg>

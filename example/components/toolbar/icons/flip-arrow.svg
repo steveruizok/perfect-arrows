@@ -1,0 +1,11 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.7273 17.5C3.53035 11.7609 6.60607 6.5 11 6.5" stroke="#BABABA"/>
+<circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="black"/>
+<path d="M11 4L16 6.5L11 9L11 4Z" fill="#BABABA"/>
+<circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="black"/>
+<circle r="1.5" transform="matrix(1.19249e-08 -1 -1 -1.19249e-08 6 18)" fill="currentColor" stroke="black"/>
+<circle r="1.5" transform="matrix(1.19249e-08 -1 -1 -1.19249e-08 6 18)" fill="currentColor" stroke="black"/>
+<path d="M6.5 18.2727C12.2391 20.4696 17.5 17.3939 17.5 13" stroke="black" stroke-linecap="round"/>
+<path d="M15.809 12.5L19.191 12.5L17.5 9.11803L15.809 12.5Z" fill="black" stroke="black"/>
+<circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="black"/>
+</svg>
