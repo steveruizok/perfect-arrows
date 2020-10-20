@@ -1,10 +1,5 @@
-import {
-  doBoxesCollide,
-  pointInRectangle,
-  pointInCorner,
-  getCorners,
-  pointInEdge,
-} from "../utils"
+import sortBy from "lodash/sortBy"
+import { doBoxesCollide, pointInRectangle, getCorners } from "../utils"
 import { S } from "@state-designer/react"
 import { getArrow, getBoxToBoxArrow } from "../../../"
 import {
@@ -42,6 +37,9 @@ class Surface {
   _unsub: () => void
   _diffIndex = 0
   _looping = true
+
+  allBoxes: IBox[] = []
+  inView: IBox[] = []
   hit: Hit = { type: HitType.Canvas }
 
   cvs: HTMLCanvasElement
@@ -55,16 +53,17 @@ class Surface {
     this.fill = "rgba(255, 255, 255, .5)"
     this.save()
 
-    // this._unsub = this.state.onUpdate(() => {
-    // 	this.clear()
-    // 	this.draw()
-    // })
+    this.allBoxes = Object.values(state.data.boxes)
+    this.inView = this.allBoxes.filter(box =>
+      doBoxesCollide(box, state.data.viewBox.document)
+    )
 
     this.loop()
   }
 
   private loop = () => {
     if (!this._looping) return
+
     this.hit = this.hitTest()
     this.cvs.style.setProperty("cursor", this.getCursor(this.hit))
 
@@ -73,22 +72,25 @@ class Surface {
       return
     }
 
-    this._diffIndex = state.index
+    this.allBoxes = Object.values(state.data.boxes)
+    this.inView = this.allBoxes.filter(box =>
+      doBoxesCollide(box, state.data.viewBox.document)
+    )
+
     this.clear()
     this.draw()
 
+    this._diffIndex = state.index
     requestAnimationFrame(this.loop)
   }
 
   destroy() {
-    // this._unsub()
     this._looping = false
   }
 
   draw() {
     this.setupCamera()
     this.renderBoxes()
-    this.renderArrows()
     if (!this.state.isIn("dragging")) {
       this.renderSelection()
       this.renderBrush()
@@ -106,9 +108,12 @@ class Surface {
   }
 
   renderBoxes() {
-    const { boxes, arrows } = this.state.data
+    const { arrows } = this.state.data
 
-    for (let box of Object.values(boxes)) {
+    this.stroke = "#000"
+    this.fill = "rgba(255, 255, 255, .9)"
+
+    for (let box of this.inView) {
       this.drawBox(box)
     }
 
@@ -116,8 +121,6 @@ class Surface {
       this.drawArrow(arrow)
     }
   }
-
-  renderArrows() {}
 
   renderSelection() {
     const { camera, bounds, boxes, selectedBoxIds } = this.state.data
@@ -205,10 +208,7 @@ class Surface {
     }
 
     // Either we don't have bounds or we're out of bounds
-    for (let box of Object.values(boxes)) {
-      // Test if box is in viewport
-      if (!doBoxesCollide(box, viewBox.document)) continue
-
+    for (let box of this.inView) {
       // Test if point collides the (padded) box
       if (pointInRectangle(point, box)) {
         // Point is in the middle of the box

@@ -17,7 +17,6 @@ export default function Positions() {
         gridTemplateColumns: "64px 64px 80px auto",
         pointerEvents: "none",
         gap: "8px",
-        fontSize: 16,
         padding: "2px 0",
         textAlign: "left",
       }}

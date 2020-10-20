@@ -10,7 +10,13 @@ import {
   IBoxSnapshot,
 } from "../../types"
 import Surface from "../canvas/surface"
-import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils"
+import {
+  doBoxesCollide,
+  pressedKeys,
+  viewBoxToCamera,
+  getBoundingBox,
+  camera,
+} from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
 import * as BoxTransforms from "./box-transforms"
 import clamp from "lodash/clamp"
@@ -23,6 +29,8 @@ export const pointerState = createState({
   data: { screen: { x: 0, y: 0 }, document: { x: 0, y: 0 } },
   on: { MOVED_POINTER: (d, p) => Object.assign(d, p) },
 })
+
+let prevB: any = {}
 
 const state = createState({
   data: {
@@ -405,20 +413,32 @@ const state = createState({
   },
   results: {
     brushSelectingBoxes(data) {
-      const { brush, boxes } = data
+      const { brush, boxes, viewBox } = data
+
       if (!brush) return []
       const { x0, y0, x1, y1 } = brush
       const [minX, maxX] = [Math.min(x0, x1), Math.max(x0, x1)]
       const [minY, maxY] = [Math.min(y0, y1), Math.max(y0, y1)]
-      return Object.values(boxes)
-        .filter(box => {
-          return !(
-            minX > box.x + box.width ||
-            minY > box.y + box.height ||
-            maxX < box.x ||
-            maxY < box.y
-          )
-        })
+
+      let inView: IBox[] = []
+
+      for (let id in boxes) {
+        const box = boxes[id]
+        if (doBoxesCollide(box, viewBox.document)) {
+          inView.push(box)
+        }
+      }
+
+      return inView
+        .filter(
+          box =>
+            !(
+              minX > box.x + box.width ||
+              minY > box.y + box.height ||
+              maxX < box.x ||
+              maxY < box.y
+            )
+        )
         .map(box => box.id)
     },
   },
@@ -475,24 +495,31 @@ const state = createState({
       const prev = camera.zoom
       const next = clamp(prev - change, 0.25, 2)
       const delta = next - prev
-      data.camera.zoom = next
-      data.camera.x += ((camera.x + pointer.x) * delta) / prev
-      data.camera.y += ((camera.y + pointer.y) * delta) / prev
+      camera.zoom = next
+      camera.x += ((camera.x + pointer.x) * delta) / prev
+      camera.y += ((camera.y + pointer.y) * delta) / prev
 
-      viewBox.document.x = camera.x
-      viewBox.document.y = camera.y
+      viewBox.document.x = camera.x / camera.zoom
+      viewBox.document.y = camera.y / camera.zoom
       viewBox.document.width = viewBox.width / camera.zoom
       viewBox.document.height = viewBox.height / camera.zoom
     },
     updateCameraPoint(data, delta: IPoint) {
-      data.camera.x += delta.x
-      data.camera.y += delta.y
+      const { camera, viewBox } = data
+      camera.x += delta.x
+      camera.y += delta.y
+      viewBox.document.x += delta.x / camera.zoom
+      viewBox.document.y += delta.y / camera.zoom
     },
     updateCameraOnViewBoxChange(data, frame: IFrame) {
       const { viewBox, camera } = data
       if (viewBox.width > 0) {
         camera.x += (viewBox.width - frame.width) / 2
         camera.y += (viewBox.height - frame.height) / 2
+        viewBox.document.x = camera.x
+        viewBox.document.y = camera.y
+        viewBox.document.width = viewBox.width / camera.zoom
+        viewBox.document.height = viewBox.height / camera.zoom
       }
     },
 

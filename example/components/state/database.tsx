@@ -1,7 +1,7 @@
 import { IBox, IArrow, IArrowType } from "../../types"
 import { getArrow } from "../utils"
 
-const RESET_LOCAL_DATA = true
+const RESET_LOCAL_DATA = false
 
 export const LOCAL_STORAGE_KEY = "perfect_arrows_example"
 
@@ -56,6 +56,23 @@ export function getInitialData(): {
         color: "rgba(255, 255, 255, 1)",
       },
     }
+
+    // Stress Test! Can do about 5000 boxes easily.
+
+    // const initBoxes = Array.from(Array(1000))
+    //   .map((_, i) => ({
+    //     id: "box_a" + i,
+    //     x: -2500 + Math.random() * 5000,
+    //     y: -2500 + Math.random() * 5000,
+    //     width: Math.random() * 400,
+    //     height: Math.random() * 400,
+    //     label: "",
+    //     color: "#FFF",
+    //   }))
+    //   .reduce((acc, cur) => {
+    //     acc[cur.id] = cur
+    //     return acc
+    //   }, {})
 
     // Initial Arrows
     const a = initBoxes["box_a0"]

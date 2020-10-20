@@ -9,7 +9,7 @@ import useViewBox from "./hooks/useViewBox"
 import Canvas from "./components/canvas/canvas"
 import Toolbar from "./components/toolbar/toolbar"
 import ZoomIndicator from "./components/overlays/zoom-indicator"
-import Positions from "./components/overlays/positions"
+import Overlays from "./components/overlays/overlays"
 
 const Container = styled.div({
   width: "100vw",
@@ -24,20 +24,10 @@ export default function App() {
 
   useWindowEvents()
 
-  const [showPositions, setShowPositions] = React.useState(true)
-
   return (
     <Container ref={ref}>
       <Canvas width={width} height={height} style={{ userSelect: "none" }} />
-      {/* <div style={{ position: "absolute", bottom: 8, left: 8 }}>
-        {showPositions && <Positions />}
-        <button
-          style={{ marginTop: 8 }}
-          onClick={() => setShowPositions(!showPositions)}
-        >
-          {showPositions ? "Hide" : "Show"}
-        </button>
-      </div> */}
+      <Overlays />
       <ZoomIndicator />
       <Toolbar />
     </Container>
