@@ -1,4 +1,3 @@
-import "react-app-polyfill/ie11"
 import * as React from "react"
 import ReactDOM from "react-dom"
 import { styled } from "./theme"

@@ -10,7 +10,7 @@ import {
   IArrow,
   IBoxSnapshot,
 } from "../../types"
-import Surface from "../canvas/surface"
+// import Surface from "../canvas/surface"
 import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
 import { BoxSelecter, getBoxSelecter } from "./box-selecter"
@@ -19,7 +19,7 @@ import clamp from "lodash/clamp"
 import uniqueId from "lodash/uniqueId"
 import { v4 as uuid } from "uuid"
 
-let surface: Surface | undefined = undefined
+// let surface: Surface | undefined = undefined
 const id = uuid()
 
 function getId() {
@@ -38,11 +38,29 @@ export const pointerState = createState({
 
 let prevB: any = {}
 
+export const steady = {
+  ...getInitialData(),
+  spawning: {
+    boxes: {} as Record<string, IBox>,
+    arrows: {} as Record<string, IArrow>,
+    clones: {} as Record<string, IBox>,
+  },
+  brush: undefined as IBrush | undefined,
+  bounds: undefined as IBounds | undefined,
+  initial: {
+    pointer: { x: 0, y: 0 },
+    selected: {
+      boxIds: [] as string[],
+      arrowIds: [] as string[],
+    },
+    boxes: {} as Record<string, IBoxSnapshot>,
+  },
+}
+
 const state = createState({
   data: {
-    ...getInitialData(),
     zOrderedBoxes: [],
-    surface: undefined as Surface | undefined,
+    // surface: undefined as Surface | undefined,
     pointer: {
       x: 0,
       y: 0,
@@ -68,26 +86,11 @@ const state = createState({
         height: 0,
       },
     },
-    spawning: {
-      boxes: {} as Record<string, IBox>,
-      arrows: {} as Record<string, IArrow>,
-      clones: {} as Record<string, IBox>,
-    },
-    brush: undefined as IBrush | undefined,
-    bounds: undefined as IBounds | undefined,
-    initial: {
-      pointer: { x: 0, y: 0 },
-      selected: {
-        boxIds: [] as string[],
-        arrowIds: [] as string[],
-      },
-      boxes: {} as Record<string, IBoxSnapshot>,
-    },
   },
   onEnter: "updateBounds",
   on: {
     RESET_BOXES: "resetBoxes",
-    UPDATED_SURFACE: (d, p) => (surface = p),
+    // UPDATED_SURFACE: (d, p) => (surface = p),
     UNDO: ["loadUndoState", "updateBounds"],
     REDO: ["loadRedoState", "updateBounds"],
     STARTED_POINTING: { secretlyDo: "setInitialPointer" },
@@ -467,7 +470,8 @@ const state = createState({
   },
   conditions: {
     distanceIsFarEnough(data) {
-      const { pointer, initial } = data
+      const { initial } = steady
+      const { pointer } = data
       const dist = Math.hypot(
         pointer.x - initial.pointer.x,
         pointer.y - initial.pointer.y
@@ -475,16 +479,16 @@ const state = createState({
       return dist > 4
     },
     boxIsSelected(data, id: string) {
-      return data.selectedBoxIds.includes(id)
+      return steady.selectedBoxIds.includes(id)
     },
     selectionHasChanged(data, _, ids: string[]) {
-      return ids.length !== data.selectedBoxIds.length
+      return ids.length !== steady.selectedBoxIds.length
     },
     isInShiftMode() {
       return pressedKeys.Shift
     },
     hasSelected(data) {
-      return data.selectedBoxIds.length > 0
+      return steady.selectedBoxIds.length > 0
     },
   },
   actions: {
@@ -511,8 +515,9 @@ const state = createState({
       })
     },
     setInitialPointer(data) {
+      const { initial } = steady
       const { pointer, viewBox, camera } = data
-      data.initial.pointer = viewBoxToCamera(pointer, viewBox, camera)
+      initial.pointer = viewBoxToCamera(pointer, viewBox, camera)
     },
 
     // Camera -------------------------
@@ -571,9 +576,10 @@ const state = createState({
 
     // Selection Brush ----------------
     startBrush(data) {
-      const { boxes, initial, pointer, viewBox, camera } = data
+      const { boxes, initial } = steady
+      const { pointer, viewBox, camera } = data
       const { x, y } = viewBoxToCamera(pointer, viewBox, camera)
-      data.brush = {
+      steady.brush = {
         x0: initial.pointer.x,
         y0: initial.pointer.y,
         x1: x,
@@ -582,7 +588,8 @@ const state = createState({
       selecter = getBoxSelecter(Object.values(boxes), { x, y })
     },
     moveBrush(data) {
-      const { brush, pointer, viewBox, camera } = data
+      const { brush } = steady
+      const { pointer, viewBox, camera } = data
       if (!brush) return
       const point = viewBoxToCamera(pointer, viewBox, camera)
       brush.x1 = point.x
@@ -590,32 +597,32 @@ const state = createState({
     },
     completeBrush(data) {
       selecter = undefined
-      data.brush = undefined
+      steady.brush = undefined
     },
 
     // Selection ----------------------
     selectBox(data, payload = {}) {
       const { id } = payload
-      data.selectedBoxIds = [id]
+      steady.selectedBoxIds = [id]
     },
     setSelectedIds(data, _, selectedBoxIds: string[]) {
-      data.selectedBoxIds = selectedBoxIds
+      steady.selectedBoxIds = selectedBoxIds
     },
     clearSelection(data) {
-      data.selectedBoxIds = []
-      data.selectedArrowIds = []
-      data.bounds = undefined
+      steady.selectedBoxIds = []
+      steady.selectedArrowIds = []
+      steady.bounds = undefined
     },
     setInitialSelectedIds(data) {
-      data.initial.selected.boxIds = [...data.selectedBoxIds]
+      steady.initial.selected.boxIds = [...steady.selectedBoxIds]
     },
 
     // Boxes --------------------------
     moveDraggingBoxes(data) {
-      const { selectedBoxIds, boxes, pointer } = data
+      const { pointer } = data
 
-      for (let id of selectedBoxIds) {
-        const box = boxes[id]
+      for (let id of steady.selectedBoxIds) {
+        const box = steady.boxes[id]
         box.x += pointer.dx
         box.y += pointer.dy
       }
@@ -623,7 +630,8 @@ const state = createState({
 
     // Bounds -------------------------
     moveBounds(data) {
-      const { bounds, pointer } = data
+      const { bounds } = steady
+      const { pointer } = data
       if (!bounds) return
       bounds.x += pointer.dx
       bounds.y += pointer.dy
@@ -631,28 +639,31 @@ const state = createState({
       bounds.maxY = bounds.y + bounds.height
     },
     updateBounds(data) {
-      const { selectedBoxIds, boxes } = data
-      if (selectedBoxIds.length === 0) data.bounds = undefined
-      data.bounds = getBoundingBox(selectedBoxIds.map(id => boxes[id]))
+      const { selectedBoxIds } = steady
+      if (selectedBoxIds.length === 0) steady.bounds = undefined
+      steady.bounds = getBoundingBox(
+        steady.selectedBoxIds.map(id => steady.boxes[id])
+      )
     },
     setEdgeResizer(data, edge: number) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
-      data.bounds = getBoundingBox(selectedBoxes)
-      resizer = BoxTransforms.getEdgeResizer(selectedBoxes, data.bounds, edge)
+      steady.bounds = getBoundingBox(selectedBoxes)
+      resizer = BoxTransforms.getEdgeResizer(selectedBoxes, steady.bounds, edge)
     },
     setCornerResizer(data, corner: number) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
-      data.bounds = getBoundingBox(selectedBoxes)
+      steady.bounds = getBoundingBox(selectedBoxes)
       resizer = BoxTransforms.getCornerResizer(
         selectedBoxes,
-        data.bounds,
+        steady.bounds,
         corner
       )
     },
     resizeBounds(data) {
-      const { selectedBoxIds, bounds, boxes, pointer, viewBox, camera } = data
+      const { bounds, boxes, selectedBoxIds } = steady
+      const { pointer, viewBox, camera } = data
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       if (!bounds) return
       const point = viewBoxToCamera(pointer, viewBox, camera)
@@ -673,7 +684,7 @@ const state = createState({
       saveToDatabase(current)
     },
     loadUndoState(data) {
-      const { boxes, arrows, selectedBoxIds, selectedArrowIds } = data
+      const { boxes, arrows, selectedBoxIds, selectedArrowIds } = steady
       const current = JSON.stringify({
         boxes,
         arrows,
@@ -697,7 +708,7 @@ const state = createState({
       saveToDatabase(JSON.stringify(redo))
     },
     saveToDatabase(data) {
-      const { boxes, arrows, selectedBoxIds, selectedArrowIds } = data
+      const { boxes, arrows, selectedBoxIds, selectedArrowIds } = steady
       const current = {
         boxes,
         arrows,
@@ -708,12 +719,12 @@ const state = createState({
     },
     // Boxes --------------------------
     setInitialSnapshot(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
 
       if (selectedBoxes.length === 0) {
-        data.initial.boxes = {}
-        data.bounds = undefined
+        steady.initial.boxes = {}
+        steady.bounds = undefined
       }
 
       const bounds = getBoundingBox(selectedBoxes)
@@ -736,61 +747,61 @@ const state = createState({
         }
       }
 
-      data.initial.boxes = initialBoxes
-      data.bounds = bounds
+      steady.initial.boxes = initialBoxes
+      steady.bounds = bounds
     },
     alignSelectedBoxesLeft(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesLeft(selectedBoxes)
     },
     alignSelectedBoxesRight(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesRight(selectedBoxes)
     },
     alignSelectedBoxesTop(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesTop(selectedBoxes)
     },
     alignSelectedBoxesBottom(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesBottom(selectedBoxes)
     },
     alignSelectedBoxesCenterX(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesCenterX(selectedBoxes)
     },
     alignSelectedBoxesCenterY(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.alignBoxesCenterY(selectedBoxes)
     },
     distributeSelectedBoxesX(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.distributeBoxesX(selectedBoxes)
     },
     distributeSelectedBoxesY(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.distributeBoxesY(selectedBoxes)
     },
     stretchSelectedBoxesX(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.stretchBoxesX(selectedBoxes)
     },
     stretchSelectedBoxesY(data) {
-      const { selectedBoxIds, boxes } = data
+      const { boxes, selectedBoxIds } = steady
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       BoxTransforms.stretchBoxesY(selectedBoxes)
     },
     deleteSelected(data) {
-      const { arrows, boxes, selectedBoxIds } = data
+      const { arrows, boxes, selectedBoxIds } = steady
       for (let id of selectedBoxIds) {
         for (let arrow of Object.values(arrows)) {
           if (arrow.to === id || arrow.from === id) {
@@ -823,10 +834,11 @@ const state = createState({
     // Drawing Box
     setBoxOrigin(data) {
       const { pointer, viewBox, camera } = data
-      data.initial.pointer = viewBoxToCamera(pointer, viewBox, camera)
+      steady.initial.pointer = viewBoxToCamera(pointer, viewBox, camera)
     },
     createDrawingBox(data) {
-      const { boxes, spawning, pointer, initial } = data
+      const { boxes, spawning, initial } = steady
+      const { pointer } = data
       spawning.boxes = {
         drawingBox: {
           id: getId(),
@@ -841,7 +853,8 @@ const state = createState({
       }
     },
     updateDrawingBox(data) {
-      const { spawning, pointer, viewBox, camera, initial } = data
+      const { spawning, initial } = steady
+      const { pointer, viewBox, camera } = data
       const box = spawning.boxes.drawingBox
       if (!box) return
       const { x, y } = viewBoxToCamera(pointer, viewBox, camera)
@@ -851,12 +864,12 @@ const state = createState({
       box.height = Math.abs(y - initial.pointer.y)
     },
     completeDrawingBox(data) {
-      const { spawning, boxes } = data
+      const { boxes, spawning } = steady
       const box = spawning.boxes.drawingBox
       if (!box) return
       boxes[box.id] = box
       spawning.boxes = {}
-      data.selectedBoxIds = [box.id]
+      steady.selectedBoxIds = [box.id]
     },
     clearDrawingBox() {},
     // Boxes
@@ -891,20 +904,20 @@ const state = createState({
         }
       })
 
-      data.boxes = boxes.reduce((acc, cur) => {
+      steady.boxes = boxes.reduce((acc, cur) => {
         acc[cur.id] = cur
         return acc
       }, {})
 
-      data.arrows = arrows.reduce((acc, cur) => {
+      steady.arrows = arrows.reduce((acc, cur) => {
         acc[cur.id] = cur
         return acc
       }, {})
 
-      data.selectedBoxIds = []
-      data.selectedArrowIds = []
+      steady.selectedBoxIds = []
+      steady.selectedArrowIds = []
 
-      setTimeout(() => surface?.forceCompute(), 0)
+      // setTimeout(() => surface?.forceCompute(), 0)
     },
   },
   values: {

@@ -6,7 +6,7 @@ import Value from "./value"
 export default function Positions() {
   const pointer = useStateDesigner(pointerState)
   const local = useStateDesigner(state)
-  const { boxes, selectedBoxIds, camera, viewBox } = local.data
+  const { camera, viewBox } = local.data
   const { screen, document } = pointer.data
 
   return (
@@ -21,14 +21,14 @@ export default function Positions() {
         textAlign: "left",
       }}
     >
-      <Value label="Boxes" style={{ gridColumn: "span 3" }}>
+      {/* <Value label="Boxes" style={{ gridColumn: "span 3" }}>
         {Object.keys(boxes).length}
       </Value>
       <div>Boxes</div>
       <Value label="Selected" style={{ gridColumn: "span 3" }}>
         {selectedBoxIds.length}
       </Value>
-      <div>Selected</div>
+      <div>Selected</div> */}
 
       <Value label="x">{Math.trunc(camera.x)}</Value>
       <Value label="y">{Math.trunc(camera.y)}</Value>

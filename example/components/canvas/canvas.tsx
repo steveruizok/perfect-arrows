@@ -1,8 +1,12 @@
 import * as React from "react"
-import { memo, useState, useRef, useEffect } from "react"
-import Surface, { HitType } from "./surface"
+import { memo, useRef, useEffect } from "react"
+// import Surface from "./surface"
+import PixiSurface from "./pixi-surface"
 import state from "../state"
 import { styled } from "../../theme"
+import * as PIXI from "pixi.js"
+
+let app: PIXI.Application
 
 const CanvasBackground = styled.div({
   width: "100vw",
@@ -17,7 +21,8 @@ type Props = React.HTMLProps<HTMLCanvasElement> & {
 }
 
 function Canvas({ width, height, ...rest }: Props) {
-  const rSurface = useRef<Surface>()
+  const rSurface = useRef<PixiSurface>()
+  const rBackground = useRef<HTMLDivElement>(null)
   const rCanvas = useRef<HTMLCanvasElement>(null)
 
   const dpr = window.devicePixelRatio || 1
@@ -25,11 +30,24 @@ function Canvas({ width, height, ...rest }: Props) {
   useEffect(() => {
     if (rSurface.current) rSurface.current.destroy()
     const canvas = rCanvas.current
-    if (!canvas) return
-    rSurface.current = new Surface(canvas)
+    const bg = rBackground.current
+    if (!(canvas && bg)) return
 
+    app = new PIXI.Application({
+      resolution: window.devicePixelRatio,
+      view: canvas,
+    })
+
+    app.resizeTo = bg
+    app.resize()
+
+    rSurface.current = new PixiSurface(canvas, app)
     state.send("UPDATED_SURFACE", rSurface.current)
-  }, [rCanvas, width, height])
+  }, [rCanvas])
+
+  useEffect(() => {
+    app.resize()
+  }, [width, height])
 
   function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
     const { deltaX, deltaY } = e
@@ -50,6 +68,7 @@ function Canvas({ width, height, ...rest }: Props) {
 
   return (
     <CanvasBackground
+      ref={rBackground}
       onWheel={handleWheel}
       onPointerDown={e => {
         const surface = rSurface.current
