@@ -1,6 +1,7 @@
 import * as React from "react"
 import { createState } from "@state-designer/react"
 import {
+  IArrowType,
   IPoint,
   IBounds,
   IBrush,
@@ -10,12 +11,7 @@ import {
   IBoxSnapshot,
 } from "../../types"
 import Surface from "../canvas/surface"
-import {
-  doBoxesCollide,
-  pressedKeys,
-  viewBoxToCamera,
-  getBoundingBox,
-} from "../utils"
+import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
 import { BoxSelecter, getBoxSelecter } from "./box-selecter"
 import * as BoxTransforms from "./box-transforms"
@@ -23,6 +19,7 @@ import clamp from "lodash/clamp"
 import uniqueId from "lodash/uniqueId"
 import { v4 as uuid } from "uuid"
 
+let surface: Surface | undefined = undefined
 const id = uuid()
 
 function getId() {
@@ -89,7 +86,8 @@ const state = createState({
   },
   onEnter: "updateBounds",
   on: {
-    UPDATED_SURFACE: (d, p) => (d.surface = p),
+    RESET_BOXES: "resetBoxes",
+    UPDATED_SURFACE: (d, p) => (surface = p),
     UNDO: ["loadUndoState", "updateBounds"],
     REDO: ["loadRedoState", "updateBounds"],
     STARTED_POINTING: { secretlyDo: "setInitialPointer" },
@@ -867,6 +865,47 @@ const state = createState({
     clearDraggingBoxesClones() {},
     createDraggingBoxesClones() {},
     completeBoxesFromClones() {},
+    // Debugging
+    resetBoxes(data, count) {
+      const boxes = Array.from(Array(parseInt(count))).map((_, i) => ({
+        id: "box_a" + i,
+        x: 64 + Math.random() * 900,
+        y: 64 + Math.random() * 500,
+        width: 5 + Math.random() * 32,
+        height: 5 + Math.random() * 32,
+        label: "",
+        color: "#FFF",
+        z: i,
+      }))
+
+      const arrows = boxes.map((boxA, i) => {
+        let boxB = boxes[i === boxes.length - 1 ? 0 : i + 1]
+
+        return {
+          id: "arrow_b" + i,
+          type: IArrowType.BoxToBox,
+          from: boxA.id,
+          to: boxB.id,
+          flip: false,
+          label: "",
+        }
+      })
+
+      data.boxes = boxes.reduce((acc, cur) => {
+        acc[cur.id] = cur
+        return acc
+      }, {})
+
+      data.arrows = arrows.reduce((acc, cur) => {
+        acc[cur.id] = cur
+        return acc
+      }, {})
+
+      data.selectedBoxIds = []
+      data.selectedArrowIds = []
+
+      setTimeout(() => surface?.forceCompute(), 0)
+    },
   },
   values: {
     undosLength() {

@@ -1,7 +1,7 @@
 import { IBox, IArrow, IArrowType } from "../../types"
 import { getArrow } from "../utils"
 
-const RESET_LOCAL_DATA = false
+const RESET_LOCAL_DATA = true
 
 export const LOCAL_STORAGE_KEY = "perfect_arrows_example"
 
@@ -61,11 +61,11 @@ export function getInitialData(): {
 
     // Stress Test! Can do about 5000 boxes easily.
 
-    const initBoxes = Array.from(Array(32))
+    const initBoxes = Array.from(Array(5))
       .map((_, i) => ({
         id: "box_a" + i,
         x: 64 + Math.random() * 720,
-        y: 64 + Math.random() * 900,
+        y: 64 + Math.random() * 400,
         width: 32 + Math.random() * 64,
         height: 32 + Math.random() * 64,
         label: "",

@@ -5,6 +5,8 @@ import state, { pointerState } from "../state"
 
 import RBush from "rbush"
 
+const arrowCache = new Set<number[]>([])
+
 class Bush extends RBush<{
   id: string
   minX: number
@@ -56,6 +58,8 @@ class Surface {
     this.save()
 
     this.allBoxes = Object.values(state.data.boxes).sort((a, b) => b.z - a.z)
+    this.computeArrows()
+    this.draw()
 
     this.loop()
   }
@@ -106,6 +110,12 @@ class Surface {
   draw() {
     this.setupCamera()
     this.renderCanvasThings()
+
+    if (this.state.isInAny("dragging")) {
+      this.computeArrows()
+    }
+
+    this.drawArrows()
     this.renderSelection()
     this.renderBrush()
   }
@@ -120,18 +130,16 @@ class Surface {
     this.lineWidth = 1 / camera.zoom
   }
 
-  renderCanvasThings() {
-    const { arrows } = this.state.data
+  forceCompute() {
+    this.computeArrows()
+  }
 
+  renderCanvasThings() {
     this.stroke = "#000"
-    this.fill = "rgba(255, 255, 255, .9)"
+    this.fill = "rgba(255, 255, 255, .2)"
 
     for (let i = this.allBoxes.length - 1; i > -1; i--) {
       this.drawBox(this.allBoxes[i])
-    }
-
-    for (let arrow of Object.values(arrows)) {
-      this.drawArrow(arrow)
     }
 
     const allSpawningBoxes = Object.values(state.data.spawning.boxes)
@@ -287,9 +295,8 @@ class Surface {
     ctx.stroke(path)
   }
 
-  drawArrow(arrow: IArrow) {
-    const { ctx } = this
-
+  computeArrows() {
+    const { arrows } = this.state.data
     let sx: number,
       sy: number,
       cx: number,
@@ -298,80 +305,95 @@ class Surface {
       ey: number,
       ea: number
 
-    switch (arrow.type) {
-      case IArrowType.BoxToBox: {
-        const from = this.state.data.boxes[arrow.from]
-        const to = this.state.data.boxes[arrow.to]
-        if (from.id === to.id) {
+    arrowCache.clear()
+
+    for (let id in arrows) {
+      const arrow = arrows[id]
+
+      switch (arrow.type) {
+        case IArrowType.BoxToBox: {
+          const from = this.state.data.boxes[arrow.from]
+          const to = this.state.data.boxes[arrow.to]
+          if (from.id === to.id) {
+          }
+          // Box to Box Arrow
+          ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+            from.x,
+            from.y,
+            from.width,
+            from.height,
+            to.x,
+            to.y,
+            to.width,
+            to.height
+          )
+
+          break
         }
-        // Box to Box Arrow
-        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
-          from.x,
-          from.y,
-          from.width,
-          from.height,
-          to.x,
-          to.y,
-          to.width,
-          to.height
-        )
+        case IArrowType.BoxToPoint: {
+          const from = this.state.data.boxes[arrow.from]
+          const to = arrow.to
+            // Box to Box Arrow
+          ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+            from.x,
+            from.y,
+            from.width,
+            from.height,
+            to.x,
+            to.y,
+            1,
+            1
+          )
 
-        break
-      }
-      case IArrowType.BoxToPoint: {
-        const from = this.state.data.boxes[arrow.from]
-        const to = arrow.to
-          // Box to Box Arrow
-        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
-          from.x,
-          from.y,
-          from.width,
-          from.height,
-          to.x,
-          to.y,
-          1,
-          1
-        )
+          break
+        }
+        case IArrowType.PointToBox: {
+          const from = arrow.from
+          const to = this.state.data.boxes[arrow.to]
+            // Box to Box Arrow
+          ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+            from.x,
+            from.y,
+            1,
+            1,
+            to.x,
+            to.y,
+            to.width,
+            to.height
+          )
 
-        break
-      }
-      case IArrowType.PointToBox: {
-        const from = arrow.from
-        const to = this.state.data.boxes[arrow.to]
-          // Box to Box Arrow
-        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
-          from.x,
-          from.y,
-          1,
-          1,
-          to.x,
-          to.y,
-          to.width,
-          to.height
-        )
+          break
+        }
+        case IArrowType.PointToPoint: {
+          const { from, to } = arrow
+            // Box to Box Arrow
+          ;[sx, sy, cx, cy, ex, ey, ea] = getArrow(from.x, from.y, to.x, to.y)
 
-        break
+          break
+        }
       }
-      case IArrowType.PointToPoint: {
-        const { from, to } = arrow
-          // Box to Box Arrow
-        ;[sx, sy, cx, cy, ex, ey, ea] = getArrow(from.x, from.y, to.x, to.y)
 
-        break
-      }
+      arrowCache.add([sx, sy, cx, cy, ex, ey, ea])
     }
+  }
 
-    ctx.save()
-    this.stroke = "#000"
-    this.fill = "#000"
-    this.lineWidth = 2 / this.state.data.camera.zoom
-    ctx.beginPath()
-    ctx.moveTo(sx, sy)
-    ctx.quadraticCurveTo(cx, cy, ex, ey)
-    ctx.stroke()
-    this.drawDot(sx, sy)
-    this.drawArrowhead(ex, ey, ea)
-    ctx.restore()
+  drawArrows() {
+    const { zoom } = this.state.data.camera
+
+    arrowCache.forEach(([sx, sy, cx, cy, ex, ey, ea]) => {
+      const { ctx } = this
+      ctx.save()
+      this.stroke = "#000"
+      this.fill = "#000"
+      this.lineWidth = 1 / zoom
+      ctx.beginPath()
+      ctx.moveTo(sx, sy)
+      ctx.quadraticCurveTo(cx, cy, ex, ey)
+      ctx.stroke()
+      this.drawDot(sx, sy)
+      this.drawArrowhead(ex, ey, ea)
+      ctx.restore()
+    })
   }
 
   drawArrowhead(x: number, y: number, angle: number) {
