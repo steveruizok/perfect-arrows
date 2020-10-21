@@ -479,7 +479,7 @@ export function getSegmentCircleIntersections(
   x1: number,
   y1: number
 ) {
-  var b: number,
+  let b: number,
     c: number,
     d: number,
     u1: number,
@@ -494,10 +494,8 @@ export function getSegmentCircleIntersections(
   c = 2 * (v1[0] * v1[0] + v1[1] * v1[1])
   b *= -2
   d = Math.sqrt(b * b - 2 * c * (v2[0] * v2[0] + v2[1] * v2[1] - r * r))
-  if (isNaN(d)) {
-    // no intercept
-    return []
-  }
+  if (isNaN(d)) return [] // no intercept
+
   u1 = (b - d) / c // these represent the unit distance of point one and two on the line
   u2 = (b + d) / c
   retP1 = [] // return points
@@ -611,6 +609,10 @@ export function getDelta(angle: number) {
   return [Math.cos(angle), Math.sin(angle)]
 }
 
+/**
+ * Get normal of angle between 45 and 90 degree increments.
+ * @param angle The angle in Radians
+ */
 export function getIntermediate(angle: number) {
   return Math.abs(Math.abs(angle % (PI / 2)) - PI / 4) / (PI / 4)
 }
@@ -841,10 +843,7 @@ const intersect = (
 
   if (t >= 0 && t <= 1) {
     return true
-    // return {
-    //   x: a - t * s1_x,
-    //   y: b - t * s1_y,
-    // }
+    // return { x: a - t * s1_x, y: b - t * s1_y, }
   }
 
   return
