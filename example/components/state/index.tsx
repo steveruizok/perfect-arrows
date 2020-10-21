@@ -87,6 +87,7 @@ const state = createState({
       boxes: {} as Record<string, IBoxSnapshot>,
     },
   },
+  onEnter: "updateBounds",
   on: {
     UPDATED_SURFACE: (d, p) => (d.surface = p),
     UNDO: ["loadUndoState", "updateBounds"],

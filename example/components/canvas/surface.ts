@@ -160,7 +160,6 @@ class Surface {
       if (bounds) {
         // draw bounds outline
         this.ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height)
-        this.save()
         this.fill = "blue"
         for (let [x, y] of getCorners(
           bounds.x,
@@ -170,7 +169,6 @@ class Surface {
         )) {
           this.drawDot(x, y, 3)
         }
-        this.restore()
       }
 
       this.restore()
@@ -292,6 +290,14 @@ class Surface {
   drawArrow(arrow: IArrow) {
     const { ctx } = this
 
+    let sx: number,
+      sy: number,
+      cx: number,
+      cy: number,
+      ex: number,
+      ey: number,
+      ea: number
+
     switch (arrow.type) {
       case IArrowType.BoxToBox: {
         const from = this.state.data.boxes[arrow.from]
@@ -299,7 +305,7 @@ class Surface {
         if (from.id === to.id) {
         }
         // Box to Box Arrow
-        const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
           from.x,
           from.y,
           from.width,
@@ -309,25 +315,14 @@ class Surface {
           to.width,
           to.height
         )
-        ctx.save()
-        this.stroke = "#000"
-        this.fill = "#000"
-        ctx.beginPath()
-        this.lineWidth = 2 / this.state.data.camera.zoom
-        ctx.moveTo(sx, sy)
-        ctx.quadraticCurveTo(cx, cy, ex, ey)
-        ctx.stroke()
-        this.drawDot(sx, sy)
-        this.drawArrowhead(ex, ey, ea)
-        ctx.restore()
-        // }
+
         break
       }
       case IArrowType.BoxToPoint: {
         const from = this.state.data.boxes[arrow.from]
         const to = arrow.to
-        // Box to Box Arrow
-        const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+          // Box to Box Arrow
+        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
           from.x,
           from.y,
           from.width,
@@ -338,24 +333,13 @@ class Surface {
           1
         )
 
-        ctx.save()
-        this.stroke = "#000"
-        this.fill = "#000"
-        ctx.beginPath()
-        ctx.moveTo(sx, sy)
-        ctx.quadraticCurveTo(cx, cy, ex, ey)
-        ctx.stroke()
-        this.drawDot(sx, sy)
-        this.drawArrowhead(ex, ey, ea)
-        ctx.restore()
-
         break
       }
       case IArrowType.PointToBox: {
         const from = arrow.from
         const to = this.state.data.boxes[arrow.to]
-        // Box to Box Arrow
-        const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+          // Box to Box Arrow
+        ;[sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
           from.x,
           from.y,
           1,
@@ -366,42 +350,28 @@ class Surface {
           to.height
         )
 
-        ctx.save()
-        this.stroke = "#000"
-        this.fill = "#000"
-        ctx.beginPath()
-        ctx.moveTo(sx, sy)
-        ctx.quadraticCurveTo(cx, cy, ex, ey)
-        ctx.stroke()
-        this.drawDot(sx, sy)
-        this.drawArrowhead(ex, ey, ea)
-        ctx.restore()
-
         break
       }
       case IArrowType.PointToPoint: {
         const { from, to } = arrow
-        // Box to Box Arrow
-        const [sx, sy, cx, cy, ex, ey, ea] = getArrow(
-          from.x,
-          from.y,
-          to.x,
-          to.y
-        )
+          // Box to Box Arrow
+        ;[sx, sy, cx, cy, ex, ey, ea] = getArrow(from.x, from.y, to.x, to.y)
 
-        ctx.save()
-        this.stroke = "#000"
-        this.fill = "#000"
-        ctx.beginPath()
-        ctx.moveTo(sx, sy)
-        ctx.quadraticCurveTo(cx, cy, ex, ey)
-        ctx.stroke()
-        this.drawDot(sx, sy)
-        this.drawArrowhead(ex, ey, ea)
-        ctx.restore()
         break
       }
     }
+
+    ctx.save()
+    this.stroke = "#000"
+    this.fill = "#000"
+    this.lineWidth = 2 / this.state.data.camera.zoom
+    ctx.beginPath()
+    ctx.moveTo(sx, sy)
+    ctx.quadraticCurveTo(cx, cy, ex, ey)
+    ctx.stroke()
+    this.drawDot(sx, sy)
+    this.drawArrowhead(ex, ey, ea)
+    ctx.restore()
   }
 
   drawArrowhead(x: number, y: number, angle: number) {
