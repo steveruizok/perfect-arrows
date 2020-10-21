@@ -1,17 +1,19 @@
-import sortBy from "lodash/sortBy"
 import { doBoxesCollide, pointInRectangle, getCorners } from "../utils"
-import { S } from "@state-designer/react"
 import { getArrow, getBoxToBoxArrow } from "../../../"
-import {
-  IBox,
-  IPoint,
-  IBrush,
-  IFrame,
-  IBounds,
-  IArrow,
-  IArrowType,
-} from "../../types"
+import { IBox, IPoint, IBrush, IFrame, IArrow, IArrowType } from "../../types"
 import state, { pointerState } from "../state"
+
+import RBush from "rbush"
+
+class Bush extends RBush<{
+  id: string
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}> {}
+
+const tree = new Bush()
 
 const PI2 = Math.PI * 2
 
@@ -39,12 +41,12 @@ class Surface {
   _looping = true
 
   allBoxes: IBox[] = []
-  inView: IBox[] = []
   hit: Hit = { type: HitType.Canvas }
 
   cvs: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   state = state
+  hoveredId = ""
 
   constructor(canvas: HTMLCanvasElement) {
     this.cvs = canvas
@@ -53,10 +55,7 @@ class Surface {
     this.fill = "rgba(255, 255, 255, .5)"
     this.save()
 
-    this.allBoxes = Object.values(state.data.boxes)
-    this.inView = this.allBoxes
-      .filter(box => doBoxesCollide(box, state.data.viewBox.document))
-      .sort((a, b) => b.z - a.z)
+    this.allBoxes = Object.values(state.data.boxes).sort((a, b) => b.z - a.z)
 
     this.loop()
   }
@@ -67,15 +66,31 @@ class Surface {
     this.hit = this.hitTest()
     this.cvs.style.setProperty("cursor", this.getCursor(this.hit))
 
+    let id = ""
+    if (this.hit.type === "box") id = this.hit.id
+
+    if (id !== this.hoveredId) {
+      this.hoveredId = id
+      if (state.index === this._diffIndex) {
+        this.clear()
+        this.draw()
+        if (id) {
+          const box = state.data.boxes[id]
+          this.save()
+          this.stroke = "blue"
+          this.ctx.strokeRect(box.x, box.y, box.width, box.height)
+          this.restore()
+        }
+      }
+    }
+
     if (state.index === this._diffIndex) {
       requestAnimationFrame(this.loop)
       return
     }
 
     this.allBoxes = Object.values(state.data.boxes)
-    this.inView = this.allBoxes
-      .filter(box => doBoxesCollide(box, state.data.viewBox.document))
-      .sort((a, b) => a.z - b.z)
+    this.allBoxes = this.allBoxes.sort((a, b) => b.z - a.z)
 
     this.clear()
     this.draw()
@@ -91,10 +106,8 @@ class Surface {
   draw() {
     this.setupCamera()
     this.renderCanvasThings()
-    if (!this.state.isIn("dragging")) {
-      this.renderSelection()
-      this.renderBrush()
-    }
+    this.renderSelection()
+    this.renderBrush()
   }
 
   setupCamera() {
@@ -113,8 +126,8 @@ class Surface {
     this.stroke = "#000"
     this.fill = "rgba(255, 255, 255, .9)"
 
-    for (let box of this.inView) {
-      this.drawBox(box)
+    for (let i = this.allBoxes.length - 1; i > -1; i--) {
+      this.drawBox(this.allBoxes[i])
     }
 
     for (let arrow of Object.values(arrows)) {
@@ -122,11 +135,8 @@ class Surface {
     }
 
     const allSpawningBoxes = Object.values(state.data.spawning.boxes)
-    const inViewSpawningBoxes = allSpawningBoxes.filter(box =>
-      doBoxesCollide(box, state.data.viewBox.document)
-    )
 
-    for (let box of inViewSpawningBoxes) {
+    for (let box of allSpawningBoxes) {
       this.save()
       this.stroke = "blue"
       this.drawBox(box)
@@ -158,7 +168,7 @@ class Surface {
           bounds.width,
           bounds.height
         )) {
-          this.drawDot(x, y, 3 / camera.zoom)
+          this.drawDot(x, y, 3)
         }
         this.restore()
       }
@@ -220,7 +230,9 @@ class Surface {
     }
 
     // Either we don't have bounds or we're out of bounds
-    for (let box of this.inView) {
+    for (let box of this.allBoxes.filter(box =>
+      doBoxesCollide(box, state.data.viewBox.document)
+    )) {
       // Test if point collides the (padded) box
       if (pointInRectangle(point, box)) {
         // Point is in the middle of the box
@@ -248,9 +260,10 @@ class Surface {
   }
 
   drawDot(x: number, y: number, radius = 4) {
+    const r = radius / this.state.data.camera.zoom
     const { ctx } = this
     ctx.beginPath()
-    ctx.ellipse(x, y, radius, radius, 0, 0, PI2, false)
+    ctx.ellipse(x, y, r, r, 0, 0, PI2, false)
     ctx.fill()
   }
 
@@ -283,46 +296,8 @@ class Surface {
       case IArrowType.BoxToBox: {
         const from = this.state.data.boxes[arrow.from]
         const to = this.state.data.boxes[arrow.to]
-        // if (from.id === to.id) {
-        //   // Box to Self Arrow
-        //   const angle = from.width / from.height
-        //   const arc = getBoxToSelfArrow(
-        //     from.x,
-        //     from.y,
-        //     from.width,
-        //     from.height,
-        //     20,
-        //     angle,
-        //     0,
-        //     20
-        //   )
-        //   if (arc === undefined) return
-        //   const largeArc = arc && arc.endAngle - arc.startAngle <= Math.PI
-        //   const p = new Path2D(
-        //     [
-        //       "M",
-        //       arc.start.x,
-        //       arc.start.y,
-        //       "A",
-        //       arc.radius,
-        //       arc.radius,
-        //       0,
-        //       largeArc ? "0" : "1",
-        //       1,
-        //       arc.end.x,
-        //       arc.end.y,
-        //     ].join(" ")
-        //   )
-        //   ctx.save()
-        //   this.stroke = "#000"
-        //   this.fill = "#000"
-        //   this.lineWidth = 2
-        //   ctx.stroke(p)
-        //   this.drawDot(arc.start.x, arc.start.y)
-        //   this.drawArrowhead(arc.end.x, arc.end.y, arc.endAngle)
-        //   ctx.restore()
-        //   return
-        // } else {
+        if (from.id === to.id) {
+        }
         // Box to Box Arrow
         const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
           from.x,
@@ -337,8 +312,8 @@ class Surface {
         ctx.save()
         this.stroke = "#000"
         this.fill = "#000"
-        this.lineWidth = 2
         ctx.beginPath()
+        this.lineWidth = 2 / this.state.data.camera.zoom
         ctx.moveTo(sx, sy)
         ctx.quadraticCurveTo(cx, cy, ex, ey)
         ctx.stroke()
@@ -366,7 +341,6 @@ class Surface {
         ctx.save()
         this.stroke = "#000"
         this.fill = "#000"
-        this.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(sx, sy)
         ctx.quadraticCurveTo(cx, cy, ex, ey)
@@ -395,7 +369,6 @@ class Surface {
         ctx.save()
         this.stroke = "#000"
         this.fill = "#000"
-        this.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(sx, sy)
         ctx.quadraticCurveTo(cx, cy, ex, ey)
@@ -419,7 +392,6 @@ class Surface {
         ctx.save()
         this.stroke = "#000"
         this.fill = "#000"
-        this.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(sx, sy)
         ctx.quadraticCurveTo(cx, cy, ex, ey)
@@ -434,13 +406,14 @@ class Surface {
 
   drawArrowhead(x: number, y: number, angle: number) {
     const { ctx } = this
+    const r = 5 / this.state.data.camera.zoom
     ctx.save()
     ctx.translate(x, y)
     ctx.rotate(angle)
     ctx.beginPath()
-    ctx.moveTo(0, -6)
-    ctx.lineTo(12, 0)
-    ctx.lineTo(0, 6)
+    ctx.moveTo(0, -r)
+    ctx.lineTo(r * 2, 0)
+    ctx.lineTo(0, r)
     ctx.closePath()
     ctx.fill()
     ctx.restore()

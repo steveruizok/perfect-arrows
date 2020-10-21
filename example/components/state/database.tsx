@@ -36,50 +36,52 @@ export function getInitialData(): {
 
   if (previous === null || RESET_LOCAL_DATA) {
     // Initial Boxes
-    const initBoxes = {
-      box_a0: {
-        id: "box_a0",
-        x: 100,
-        y: 100,
-        width: 100,
-        height: 100,
-        label: "",
-        color: "rgba(255, 255, 255, 1)",
-        z: 0,
-      },
-      box_a1: {
-        id: "box_a1",
-        x: 200,
-        y: 300,
-        width: 100,
-        height: 100,
-        label: "",
-        color: "rgba(255, 255, 255, 1)",
-        z: 1,
-      },
-    }
+    // const initBoxes = {
+    //   box_a0: {
+    //     id: "box_a0",
+    //     x: 100,
+    //     y: 100,
+    //     width: 100,
+    //     height: 100,
+    //     label: "",
+    //     color: "rgba(255, 255, 255, 1)",
+    //     z: 0,
+    //   },
+    //   box_a1: {
+    //     id: "box_a1",
+    //     x: 200,
+    //     y: 300,
+    //     width: 100,
+    //     height: 100,
+    //     label: "",
+    //     color: "rgba(255, 255, 255, 1)",
+    //     z: 1,
+    //   },
+    // }
 
     // Stress Test! Can do about 5000 boxes easily.
 
-    // const initBoxes = Array.from(Array(1000))
-    //   .map((_, i) => ({
-    //     id: "box_a" + i,
-    //     x: -2500 + Math.random() * 5000,
-    //     y: -2500 + Math.random() * 5000,
-    //     width: Math.random() * 400,
-    //     height: Math.random() * 400,
-    //     label: "",
-    //     color: "#FFF",
-    // 		 z: i,
-    //   }))
-    //   .reduce((acc, cur) => {
-    //     acc[cur.id] = cur
-    //     return acc
-    //   }, {})
+    const initBoxes = Array.from(Array(500))
+      .map((_, i) => ({
+        id: "box_a" + i,
+        x: 100 + Math.random() * 500,
+        y: 100 + Math.random() * 500,
+        width: 25 + Math.random() * 25,
+        height: 25 + Math.random() * 25,
+        label: "",
+        color: "#FFF",
+        z: i,
+      }))
+      .reduce((acc, cur) => {
+        acc[cur.id] = cur
+        return acc
+      }, {})
 
     // Initial Arrows
     const a = initBoxes["box_a0"]
     const b = initBoxes["box_a1"]
+
+    const allBoxes = Object.values(initBoxes)
 
     const initArrows: Record<string, IArrow> = {
       arrow_a0: {
@@ -122,6 +124,21 @@ export function getInitialData(): {
         flip: false,
         label: "",
       },
+    }
+
+    for (let i = 0; i < allBoxes.length; i++) {
+      let boxA = initBoxes["box_a" + i]
+      let boxB = initBoxes["box_a" + (i + 1)]
+      if (!boxA || !boxB) continue
+
+      initArrows["arrow_b" + i] = {
+        id: "arrow_b" + i,
+        type: IArrowType.BoxToBox,
+        from: boxA.id,
+        to: boxB.id,
+        flip: false,
+        label: "",
+      }
     }
 
     initial = {

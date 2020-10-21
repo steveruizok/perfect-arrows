@@ -17,6 +17,7 @@ import {
   getBoundingBox,
 } from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
+import { BoxSelecter, getBoxSelecter } from "./box-selecter"
 import * as BoxTransforms from "./box-transforms"
 import clamp from "lodash/clamp"
 import uniqueId from "lodash/uniqueId"
@@ -28,7 +29,8 @@ function getId() {
   return uniqueId(id)
 }
 
-let resizer: BoxTransforms.EdgeResizer | BoxTransforms.CornerResizer
+let selecter: BoxSelecter | undefined
+let resizer: BoxTransforms.EdgeResizer | BoxTransforms.CornerResizer | undefined
 const undos: string[] = []
 const redos: string[] = []
 
@@ -455,33 +457,13 @@ const state = createState({
   },
   results: {
     brushSelectingBoxes(data) {
-      const { brush, boxes, viewBox } = data
+      const { camera, pointer, viewBox } = data
 
-      if (!brush) return []
-      const { x0, y0, x1, y1 } = brush
-      const [minX, maxX] = [Math.min(x0, x1), Math.max(x0, x1)]
-      const [minY, maxY] = [Math.min(y0, y1), Math.max(y0, y1)]
+      const results = selecter
+        ? selecter(viewBoxToCamera(pointer, viewBox, camera))
+        : []
 
-      let inView: IBox[] = []
-
-      for (let id in boxes) {
-        const box = boxes[id]
-        if (doBoxesCollide(box, viewBox.document)) {
-          inView.push(box)
-        }
-      }
-
-      return inView
-        .filter(
-          box =>
-            !(
-              minX > box.x + box.width ||
-              minY > box.y + box.height ||
-              maxX < box.x ||
-              maxY < box.y
-            )
-        )
-        .map(box => box.id)
+      return results
     },
   },
   conditions: {
@@ -590,7 +572,7 @@ const state = createState({
 
     // Selection Brush ----------------
     startBrush(data) {
-      const { initial, pointer, viewBox, camera } = data
+      const { boxes, initial, pointer, viewBox, camera } = data
       const { x, y } = viewBoxToCamera(pointer, viewBox, camera)
       data.brush = {
         x0: initial.pointer.x,
@@ -598,6 +580,7 @@ const state = createState({
         x1: x,
         y1: y,
       }
+      selecter = getBoxSelecter(Object.values(boxes), { x, y })
     },
     moveBrush(data) {
       const { brush, pointer, viewBox, camera } = data
@@ -607,6 +590,7 @@ const state = createState({
       brush.y1 = point.y
     },
     completeBrush(data) {
+      selecter = undefined
       data.brush = undefined
     },
 
@@ -673,7 +657,7 @@ const state = createState({
       const selectedBoxes = selectedBoxIds.map(id => boxes[id])
       if (!bounds) return
       const point = viewBoxToCamera(pointer, viewBox, camera)
-      resizer(point, selectedBoxes, bounds)
+      resizer && resizer(point, selectedBoxes, bounds)
     },
 
     // Undo / Redo --------------------
@@ -839,7 +823,8 @@ const state = createState({
     invertArrowsToSelectedBoxes() {},
     // Drawing Box
     setBoxOrigin(data) {
-      data.initial.pointer = data.pointer
+      const { pointer, viewBox, camera } = data
+      data.initial.pointer = viewBoxToCamera(pointer, viewBox, camera)
     },
     createDrawingBox(data) {
       const { boxes, spawning, pointer, initial } = data
@@ -857,13 +842,14 @@ const state = createState({
       }
     },
     updateDrawingBox(data) {
-      const { spawning, pointer, initial } = data
+      const { spawning, pointer, viewBox, camera, initial } = data
       const box = spawning.boxes.drawingBox
       if (!box) return
-      box.x = Math.min(pointer.x, initial.pointer.x)
-      box.y = Math.min(pointer.y, initial.pointer.y)
-      box.width = Math.abs(pointer.x - initial.pointer.x)
-      box.height = Math.abs(pointer.y - initial.pointer.y)
+      const { x, y } = viewBoxToCamera(pointer, viewBox, camera)
+      box.x = Math.min(x, initial.pointer.x)
+      box.y = Math.min(y, initial.pointer.y)
+      box.width = Math.abs(x - initial.pointer.x)
+      box.height = Math.abs(y - initial.pointer.y)
     },
     completeDrawingBox(data) {
       const { spawning, boxes } = data

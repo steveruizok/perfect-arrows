@@ -220,23 +220,23 @@ export function getCornerResizer(
 ) {
   const snapshots = getSnapshots(initialBoxes, initialBounds)
 
-  let { x: _x0, y: _y0, maxX: _x1, maxY: _y1 } = initialBounds
+  let { x: x0, y: y0, maxX: x1, maxY: y1 } = initialBounds
   let { x: mx, y: my, width: mw, height: mh } = initialBounds
 
   return function cornerResizer(point: IPoint, boxes: IBox[], bounds: IBounds) {
     const { x, y } = point
-    corner < 2 ? (_y0 = y) : (_y1 = y)
-    my = _y0 < _y1 ? _y0 : _y1
-    mh = Math.abs(_y1 - _y0)
+    corner < 2 ? (y0 = y) : (y1 = y)
+    my = y0 < y1 ? y0 : y1
+    mh = Math.abs(y1 - y0)
 
-    corner === 1 || corner === 2 ? (_x1 = x) : (_x0 = x)
-    mx = _x0 < _x1 ? _x0 : _x1
-    mw = Math.abs(_x1 - _x0)
+    corner === 1 || corner === 2 ? (x1 = x) : (x0 = x)
+    mx = x0 < x1 ? x0 : x1
+    mw = Math.abs(x1 - x0)
 
     for (let box of boxes) {
       const { nx, nmx, nw, ny, nmy, nh } = snapshots[box.id]
-      box.x = mx + (_x1 < _x0 ? nmx : nx) * mw
-      box.y = my + (_y1 < _y0 ? nmy : ny) * mh
+      box.x = mx + (x1 < x0 ? nmx : nx) * mw
+      box.y = my + (y1 < y0 ? nmy : ny) * mh
       box.width = nw * mw
       box.height = nh * mh
     }
