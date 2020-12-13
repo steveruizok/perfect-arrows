@@ -5462,9 +5462,9 @@ inherits@2.0.3:
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
 
 ini@^1.3.5:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
-  integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
+  version "1.3.8"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
+  integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
 
 inquirer@7.0.4:
   version "7.0.4"
@@ -7728,10 +7728,10 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-perfect-arrows@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/perfect-arrows/-/perfect-arrows-0.3.0.tgz#d880950e7d58979ad87c0982fc6f6e45756188f1"
-  integrity sha512-eke3SlqakgoObuXzMuRKGOEmiEENVzeit0yxrYsPSQPRRtdtTi/WLWEUVhSFn1u2//QUxdIJWBYvjaoWE427HQ==
+perfect-arrows@^0.3.2:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/perfect-arrows/-/perfect-arrows-0.3.3.tgz#62ec57f3a6dedffadd60a0e61119ebfc1ef41bd0"
+  integrity sha512-4VqnAYK9O6dFS4S+WAZNB0iDlFSpfwSxf0EAxqHwuCFga1Q73yXt9Z3x43DHU5tSVDPscPVU3RuvQNgxPz5Jag==
 
 performance-now@^2.1.0:
   version "2.1.0"
