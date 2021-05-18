@@ -20,4 +20,10 @@ describe("getBoxToBoxArrow", () => {
       getBoxToBoxArrow(10, 10, 10, 10, 30, 30, 10, 10, { straights: false })
     ).toMatchSnapshot()
   })
+
+  test("it computes an arrow between boxes with straights disabled", () => {
+    expect(
+      getBoxToBoxArrow(10745, 4384, 71, 134, 10674, 4715, 82, 165)
+    ).toMatchSnapshot()
+  })
 })
