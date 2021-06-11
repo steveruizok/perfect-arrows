@@ -1,6 +1,6 @@
-import React from "react";
-import PointToPoint from "./PointToPoint";
-import BoxToBox from "./BoxToBox";
+import React from "react"
+import PointToPoint from "./PointToPoint"
+import BoxToBox from "./BoxToBox"
 
 export default function App() {
   return (
@@ -8,5 +8,5 @@ export default function App() {
       <PointToPoint />
       <BoxToBox />
     </div>
-  );
+  )
 }

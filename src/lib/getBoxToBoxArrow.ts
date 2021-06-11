@@ -183,15 +183,16 @@ export default function getBoxToBoxArrow(
   /* ----------------- STARTING POINT ----------------- */
 
   // Angle of the first box
-  const finalAngle0 =
+  let finalAngle0 =
     overlapEffect >= 0.5
-      ? (PI2 + (angle + PI * rot)) % PI2
-      : (PI2 + (angle + Math.max(MIN_ANGLE, combinedOffset) * rot)) % PI2
+      ? angle + PI * rot
+      : angle + Math.max(MIN_ANGLE, combinedOffset) * rot
 
   // Deltas of starting angle
-  const [dx0, dy0] = getDelta(finalAngle0)
+  const [dx0, dy0] = getDelta(+(finalAngle0 % PI2).toPrecision(3))
 
-  const intersectionsA = getRayRoundedRectangleIntersection(
+  // Get ray intersection with rounded rectangle
+  const [[tsx, tsy]] = getRayRoundedRectangleIntersection(
     cx0,
     cy0,
     dx0,
@@ -202,9 +203,6 @@ export default function getBoxToBoxArrow(
     ph0,
     padStart
   )
-
-  // Get ray intersection with rounded rectangle
-  const [[tsx, tsy]] = intersectionsA
 
   // Get midpoint of startingintersected segment
   const startSeg = getRectangleSegmentIntersectedByRay(
@@ -269,13 +267,13 @@ export default function getBoxToBoxArrow(
       (cardEffect1 + overlapEffect1) +
       (distOffset + angleOffset) / 2
 
-    const finalAngle1 =
+    let finalAngle1 =
       overlapEffect >= 0.5
-        ? (PI2 + (angle + PI * rot)) % PI2
-        : (PI2 + (angle + Math.max(MIN_ANGLE, combinedOffset) * rot)) % PI2
+        ? angle + PI * rot
+        : angle + PI - Math.max(combinedOffset, MIN_ANGLE) * rot
 
     // Deltas of ending angle
-    const [dx1, dy1] = getDelta(finalAngle1)
+    const [dx1, dy1] = getDelta(+(finalAngle1 % PI2).toPrecision(3))
 
     // Get ray intersection with ending rounded rectangle
     const [[tex, tey]] = getRayRoundedRectangleIntersection(

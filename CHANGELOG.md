@@ -1,3 +1,7 @@
+# 0.3.5
+
+- Reduces precision to fix bug on angles.
+
 # 0.3.4
 
 - Fixes bug on angles above or below 2PI.
