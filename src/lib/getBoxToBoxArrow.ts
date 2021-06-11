@@ -26,6 +26,7 @@ export type ArrowOptions = {
 }
 
 const PI = Math.PI
+const PI2 = PI * 2
 const MIN_ANGLE = PI / 24
 
 /**
@@ -184,14 +185,13 @@ export default function getBoxToBoxArrow(
   // Angle of the first box
   const finalAngle0 =
     overlapEffect >= 0.5
-      ? angle + PI * rot
-      : angle + Math.max(MIN_ANGLE, combinedOffset) * rot
+      ? (PI2 + (angle + PI * rot)) % PI2
+      : (PI2 + (angle + Math.max(MIN_ANGLE, combinedOffset) * rot)) % PI2
 
   // Deltas of starting angle
   const [dx0, dy0] = getDelta(finalAngle0)
 
-  // Get ray intersection with rounded rectangle
-  const [[tsx, tsy]] = getRayRoundedRectangleIntersection(
+  const intersectionsA = getRayRoundedRectangleIntersection(
     cx0,
     cy0,
     dx0,
@@ -202,6 +202,9 @@ export default function getBoxToBoxArrow(
     ph0,
     padStart
   )
+
+  // Get ray intersection with rounded rectangle
+  const [[tsx, tsy]] = intersectionsA
 
   // Get midpoint of startingintersected segment
   const startSeg = getRectangleSegmentIntersectedByRay(
@@ -268,8 +271,8 @@ export default function getBoxToBoxArrow(
 
     const finalAngle1 =
       overlapEffect >= 0.5
-        ? angle + PI * rot
-        : angle + PI - Math.max(combinedOffset, MIN_ANGLE) * rot
+        ? (PI2 + (angle + PI * rot)) % PI2
+        : (PI2 + (angle + Math.max(MIN_ANGLE, combinedOffset) * rot)) % PI2
 
     // Deltas of ending angle
     const [dx1, dy1] = getDelta(finalAngle1)

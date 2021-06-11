@@ -1,3 +1,7 @@
+# 0.3.4
+
+- Fixes bug on angles above or below 2PI.
+
 # 0.3.3
 
 - Improves arc effects on near-overlaps.
