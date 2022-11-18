@@ -9,7 +9,7 @@ A set of functions for drawing perfect arrows between points and shapes.
 
 👉 [Demo](https://perfect-arrows.now.sh/)
 
-[![Edit example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/steveruizok/perfect-arrows/tree/master/example?fontsize=14&hidenavigation=1&theme=dark)
+[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/github/steveruizok/perfect-arrows)
 
 <div align="center">
 <p>Other languages</p>
